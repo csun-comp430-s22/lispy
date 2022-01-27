@@ -18,6 +18,7 @@ fail_under = 80
 
 [tool.coverage.run]
 branch = true
+data_file = "${COVERAGE_DATAFILE-.coverage}"
 source_pkgs = ["lispyc"]
 source = ["tests"]
 
