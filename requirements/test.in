@@ -1,0 +1,6 @@
+-c coverage.pip
+-r requirements.pip
+
+pytest>=7.0.1
+pytest-cov>=3
+pytest-xdist>=2.5

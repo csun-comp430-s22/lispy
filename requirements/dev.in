@@ -1,0 +1,4 @@
+-r requirements.pip
+-r pip-tools.pip
+-r lint.pip
+-r test.pip

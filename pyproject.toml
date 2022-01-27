@@ -9,7 +9,7 @@ skip_gitignore = true
 src_paths = ["lispyc"]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "7.0"
 addopts = "-ra -q --import-mode=importlib"
 testpaths = ["tests"]
 

@@ -1,0 +1,6 @@
+-c coverage.pip
+-c requirements.pip
+
+# https://github.com/jazzband/pip-tools/issues/1558
+pip<22
+pip-tools>=6.4
