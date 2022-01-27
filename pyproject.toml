@@ -1,0 +1,29 @@
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.isort]
+line_length = 100
+profile = "black"
+skip_gitignore = true
+src_paths = ["lispyc"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --import-mode=importlib"
+testpaths = ["tests"]
+
+[tool.coverage.report]
+fail_under = 80
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["lispyc"]
+source = ["tests"]
+
+[tool.setuptools_scm]
+version_scheme = "python-simplified-semver"
+
+[build-system]
+requires = ["setuptools>=46", "setuptools_scm>=6.2", "wheel"]
+build-backend = "setuptools.build_meta"
