@@ -23,9 +23,10 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: &flake8_version 4.0.1
     hooks:
-      - id: flake8
+      - &flake8_hook
+        id: flake8
         additional_dependencies:
           - flake8-annotations~=2.7.0
           - flake8-docstrings~=1.6
@@ -33,3 +34,14 @@ repos:
           - flake8-string-format~=0.3.0
           - pep8-naming~=0.12
           - pydocstyle~=6.1.1
+  - repo: https://github.com/PyCQA/flake8
+    rev: *flake8_version
+    hooks:
+      - <<: *flake8_hook
+        alias: flake8-annotate
+        name: flake8 (with annotations)
+        stages: [manual]
+        args: [
+          --format,
+          "::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s",
+        ]
