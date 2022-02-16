@@ -1,0 +1,92 @@
+% !TEX output_directory = ./.temp/proposal
+% !TEX options = --shell-escape
+
+\documentclass[a4paper, 12pt]{article}
+\usepackage[outputdir=./.temp/proposal]{common}
+
+\title{Language Design Proposal: lispy}
+
+\begin{document}
+
+\maketitle
+
+\section{Compiler}
+\subsection{Target Language}
+Python
+
+\subsection{Metalanguage}
+Python
+
+\subsubsection{Reasoning}
+I'm very experienced with the language; I've written a lexer and parser in Python before too. I want to remove as much overhead as possible so I can focus on implementing the compiler rather than learning a new language. Recent Python versions also support pattern matching. High performance is not a goal for this compiler.
+
+\section{Language}
+\subsection{Name}
+\lispy/
+
+\subsection{Description}
+A compiled, statically typed, lexically scoped, and type-inferred LISP-like language. Rather than being based on the more modern and complex dialects of LISP, \lispy/ is based on LISP 1.5, as described in \href{https://www.lispmachine.net/books/LISP_1.5_Programmers_Manual.pdf}{\textit{LISP 1.5 Programmer's Manual}} (McCarthy et al., 1985) and \href{http://www.softwarepreservation.org/projects/LISP/book/Weismann_LISP1.5_Primer_1967.pdf}{\textit{LISP 1.5 Primer}} (Weismann, 1967). However, it has significant adjustments and deviations from LISP 1.5. This helps the language stay small and manageable, but a lot of the differences also stem from the need to make the language statically typed rather than dynamically typed.
+
+\subsection{Planned Restrictions}
+\subsubsection{General}
+\begin{itemize}
+    \item No character objects / strings.
+    \item No input support.
+    \item No debugging, tracing, or error handling.
+    \item No back-trace for runtime errors.
+    \item No distinction between compiled and interpreted code; everything is compiled.
+    \item Many built-in functions will be classified as special forms because the language's type system cannot describe these functions.
+    \item Special forms are not first-class citizens.
+    \item Special forms cannot be redefined.
+\end{itemize}
+
+\subsubsection{Syntactic}
+\begin{itemize}
+    \item No comments.
+    \item No octal numbers.
+    \item No comma delimiter for list elements.
+    \item No dot notation for S-expressions.
+\end{itemize}
+
+\subsubsection{Typing}
+\begin{itemize}
+    \item All lists are homogenous.
+    \item Types of lambda parameters must always be explicitly defined; they are never inferred.
+    \item All branches of conditional expressions must evaluate to the same type.
+\end{itemize}
+
+\subsubsection{Cut LISP 1.5 Features}
+\begin{itemize}
+    \item No macros.
+    \item No arrays.
+    \item No compiler/assembler functions.
+    \item No \texttt{PROG}.
+    \item No \texttt{QUOTE}.
+    \item No \texttt{EVAL} or \texttt{EVALQUOTE}.
+    \item No property lists (\texttt{GET}, \texttt{PUT}, \texttt{PROP}, \texttt{REMPROP}).
+    \item No in-place list manipulation (\texttt{RPLACA}, \texttt{RPLACD}, \texttt{NCONC}).
+    \item No user-defined functions using machine code.
+\end{itemize}
+
+\newpage
+\subsection{Syntax}\label{subsec:syntax}
+\subsubsection{Abstract Syntax}
+\textit{Note:} \texttt{*} denotes zero or more of the preceding term. \texttt{+} denotes one or more of the preceding term.
+\inputminted[fontsize=\footnotesize]{bnf}{grammar_abstract.bnf}
+
+\newpage
+\subsubsection{Concrete Syntax}
+\inputminted[fontsize=\footnotesize]{ebnf}{grammar.ebnf}
+
+\newpage
+\subsection{Non-trivial Features}
+\begin{enumerate}
+    \item Higher-order functions (computation abstraction)
+    \item \texttt{cons}, \texttt{car}, and \texttt{cdr}
+    \item Type inference
+\end{enumerate}
+
+\paragraph{Higher-order Functions}
+Lambdas will not be implemented using Python's existing facilities for functions and lambda functions. Instead, this feature will be implemented as a map of function indices to custom objects representing closures.
+
+\end{document}

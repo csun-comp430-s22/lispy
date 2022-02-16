@@ -1,0 +1,37 @@
+(* ------------------------- Character sets -------------------------- *)
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K"
+       | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V"
+       | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g"
+       | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r"
+       | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" | "_";
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+ws = " " | "\r" | "\n" | "\t" | "\f" | "\v";
+
+(* ---------------------------- Numbers ------------------------------ *)
+sign = "+" | "-";
+radix = ( digit, "." ) | ( ".", digit );
+decimal = { digit }, radix, { digit }
+        | digit, { digit };
+exponent = ( "e" | "E" ), [ sign, digit ], { digit };
+number = [ sign ], ( "inf" | "nan" )
+       | [ sign ], decimal, [ exponent ];
+
+(* ----------------------------- Atoms ------------------------------- *)
+(* Literal atoms must start with a letter. *)
+literal_atom = letter, { letter | digit };
+bool = "true" | "false";
+atom = number | bool | literal_atom;
+
+(* -------------------------- S-expressions -------------------------- *)
+(* Empty lists are valid too. *)
+(* List elements must be delimited by >= 1 ws. *)
+sexpr_elements = { s_expression, ws }, s_expression;
+list_elements = sexpr_elements | s_expression | { ws };
+
+sexp_non_atomic = "(", list_elements, ")";
+s_expression = { ws }, ( atom | sexp_non_atomic ), { ws };
+
+(* ----------------------------- Program ----------------------------- *)
+(* Consecutive atoms must be separated by >= 1 ws. *)
+atoms = { ws }, atom, { ws }, { ws, { ws }, atom, { ws } };
+program = { [ { ws }, sexp_non_atomic, { ws } ], [ atoms ] };

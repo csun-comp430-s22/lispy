@@ -1,0 +1,57 @@
+\NeedsTeXFormat{LaTeX2e}
+
+% Requirements
+\RequirePackage{xkeyval}
+
+% Options
+\newcommand{\outputdir}{}
+
+\DeclareOptionX{outputdir}{\renewcommand{\outputdir}{#1}}
+\DeclareOptionX*{\PackageWarning{common}{`\CurrentOption' ignored}}
+\ProcessOptionsX
+
+% Preamble
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% Syntax highlighting.
+\usepackage[outputdir=\outputdir]{minted}
+
+% Avoid page breaks right after headings.
+% https://tex.stackexchange.com/a/2358
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@afterheading}%
+    {\clubpenalty \@M}{\clubpenalties 3 \@M \@M 0}{}{}
+\patchcmd{\@afterheading}%
+    {\clubpenalty \@clubpenalty}{\clubpenalties 2 \@clubpenalty 0}{}{}
+\makeatother
+
+% Reference a section by name rather than by number.
+\usepackage{nameref}
+
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+    bookmarksnumbered,
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black},
+}
+
+\usepackage{bookmark}
+
+% Remove spacing around date and author.
+\usepackage{titling}
+\predate{}
+\postdate{}
+\preauthor{}
+\postauthor{}
+
+% Clear date and author.
+\date{}
+\author{}
+
+\def\lispy/{\textit{lispy}}

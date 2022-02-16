@@ -1,0 +1,29 @@
+<name> ::= <string of letters and numbers>
+<number> ::= <a decimal number> | "inf" | "nan"
+<const> ::= <number> | "true" | "false"
+
+<type> ::= "int" | "float" | "bool"
+         | "(" "list" <type> ")"
+         | "(" "func" "(" <type>* ")" <type> ")"
+
+<func-param> ::= "(" <name> <type> ")"
+<lambda> ::= "(" "lambda" "(" <func-param>* ")" <form> ")"
+
+<define> ::= "(" "define" <name> "(" <func-param>* ")" <form> ")"
+
+<progn> ::= "(" "progn" <form> <form>+ ")"
+
+<let-binding> ::= "(" <name> <form> ")"
+<let> ::= "(" "let" "(" <let-binding>+ ")" <form>+ ")"
+
+<branch> ::= "(" <form> <form> ")"
+<cond> ::= "(" "cond" <branch>+ <form> ")"
+<select> ::= "(" "select" <form> <branch>+ <form> ")"
+
+<elementary-form> ::= <const> | <name>
+<simple-form> ::= "(" <name> <elementary-form>* ")"
+<composed-form> ::= "(" <form> <form>* ")"
+<special-form> ::= <lambda> | <define> | <progn> | <let> | <cond> | <select>
+<form> :: = <elementary-form> | <simple-form> | <composed-form> | <special-form>
+
+<program> ::= <form>*
