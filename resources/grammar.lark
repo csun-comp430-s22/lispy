@@ -1,18 +1,19 @@
-NUMBER: SIGNED_NUMBER
+FLOAT: SIGNED_FLOAT
       | [ "+" | "-" ] ( "inf" | "nan" )
 
 // Literal atoms must start with a letter.
 LITERAL_ATOM: LETTER ( LETTER | DIGIT )*
 BOOL: "true" | "false"
-ATOM: NUMBER | BOOL | LITERAL_ATOM
+atom: SIGNED_INT | FLOAT | BOOL | LITERAL_ATOM
 
 // Empty lists are valid too.
 // List elements must be delimited by >= 1 ws.
 _list_elements: ( s_expression WS+ )* s_expression | WS*
-s_expression: WS* ( ATOM | "(" _list_elements ")" ) WS*
+s_expression: WS* ( atom | "(" _list_elements ")" ) WS*
 program: s_expression*
 
-%import common.SIGNED_NUMBER
+%import common.SIGNED_INT
+%import common.SIGNED_FLOAT
 %import common.DIGIT
 %import common.WS
 %import common.LETTER
