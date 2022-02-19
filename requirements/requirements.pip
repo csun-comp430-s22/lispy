@@ -4,3 +4,5 @@
 #
 #    make upgrade
 #
+lark==1.1.1
+    # via lispyc (setup.cfg)
