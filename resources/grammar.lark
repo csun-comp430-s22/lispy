@@ -8,9 +8,9 @@ atom: SIGNED_INT | FLOAT | BOOL | LITERAL_ATOM
 
 // Empty lists are valid too.
 // List elements must be delimited by >= 1 ws.
-_list_elements: ( s_expression WS+ )* s_expression | WS*
-s_expression: WS* ( atom | "(" _list_elements ")" ) WS*
-program: s_expression*
+list: ( _s_expression WS+ )* _s_expression | WS*
+_s_expression: WS* ( atom | "(" list ")" ) WS*
+program: _s_expression*
 
 %import common.SIGNED_INT
 %import common.SIGNED_FLOAT
