@@ -1,0 +1,447 @@
+First, recall the following built-ins, which have already been presented and will not be discussed any further in this section:
+\begin{center}
+    \texttt{%
+    \begin{tabular}{l l l l}
+        list & cons & car & cdr \\
+        cond & select & let & set \\
+        lambda & progn
+    \end{tabular}}
+\end{center}
+
+While discussing functions here, all arguments can be assumed to be evaluated unless explicitly noted otherwise. For example, stating an argument $a$ must be a \texttt{bool} really means that it must be some form that evaluates to a \texttt{bool}. Furthermore, all arguments can be assumed to be evaluated left to right unless explicitly noted otherwise. Finally, recall that a special form is not a first-class citizen, so it cannot be used as an argument (but it can be called so that its return value is used as an argument).
+
+\pagebreak[4] % CLEANUP
+\subsection{Predicate Functions}
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (eq ?$e_1$? ?$e_2$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} if the values of $e_1$ and $e_2$ have the same internal memory address. Otherwise, returns \texttt{false}. The values must be of the same type. The values cannot be \texttt{int}s, \texttt{float}s, or special forms. This is always \texttt{true} if both arguments are \texttt{true} or \texttt{false}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (equal ?$e_1$? ?$e_2$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} if the values of $e_1$ and $e_2$ are equivalent. Otherwise, returns \texttt{false}. The values must be of the same type. The values must not be \texttt{func}s.
+    \setlength{\parindent}{1.5em}%
+    \par\indent%
+    \texttt{int}s are equivalent following the rules of mathematics. \texttt{float}s are similar, except that due to a lack of infinite precision, they're equivalent if they're within an implementation-defined distance of each other.
+    \par\indent%
+    \texttt{list}s are compared element-wise (sensitive to ordering), recursing into nested lists if needed. Lists of differing lengths are trivially not equivalent. Lists must not contain a \texttt{func} at either the top level or in any nested list.
+    \par\indent%
+    For the Booleans, \texttt{true} is trivially only equivalent to itself and so is \texttt{false}.
+\end{funcdefs}
+% NOTE: float comparison https://stackoverflow.com/a/32334103
+% TODO: should this work differently for nil?
+
+\subsubsection{Arithmetic Predicates}
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (greaterp ?$n_1$? ?$n_2$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} if $n_1 > n_2$. Otherwise, returns \texttt{false}. Both arguments must be \texttt{int}s or \texttt{float}s. However, they do not have to the same type; an \texttt{int} can be compared to a \texttt{float}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (evenp ?$n$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns \texttt{true} if $n$ is an even number. Otherwise, returns \texttt{false}. $n$ must be an \texttt{int}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (lessp ?$n_1$? ?$n_2$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} if $n_1 < n_2$. Otherwise, returns \texttt{false}. Both arguments must be \texttt{int}s or \texttt{float}s. However, they do not have to the same type; an \texttt{int} can be compared to a \texttt{float}.
+\end{funcdefs}
+
+\subsubsection{List Predicates}
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (null ?$l$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} if $l$ is \texttt{nil}. Otherwise, returns \texttt{false}. $l$ must be a \texttt{list}. Equivalent to \texttt{(equal $l$ nil)}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (member ?$e$? ?$l$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} $e$ is an element of a list $l$. Otherwise, returns \texttt{false}. $l$ must be a \texttt{list} and $e$ must have the same type as $l$'s elements (except for the implicit terminating \texttt{nil}).
+    \setlength{\parindent}{1.5em}%
+    \par\indent%
+    $e$ is said to be an element of a list $l$ of length $n$ if \texttt{(equal $e$ $l_i$)} is \texttt{true} for any $i$ in $[1, n]$.
+\end{funcdefs}
+
+\subsubsection{Logical Connectives}
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (not ?$p$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns \texttt{true} if $p$ is \texttt{false}. Otherwise, returns \texttt{false}. $p$ must be a \texttt{bool}. Equivalent to \texttt{(eq $p$ true)}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (and ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} if all $e_1 \ldots e_n$ are \texttt{true}. Otherwise, returns \texttt{false}. $e_1 \ldots e_n$ must all be \texttt{bool}s.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (or ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns \texttt{true} if any of $e_1 \ldots e_n$ are \texttt{true}. Otherwise, returns \texttt{false}. $e_1 \ldots e_n$ must all be \texttt{bool}s.
+\end{funcdefs}
+
+\noindent \texttt{and} and \texttt{or} don't always evaluate all arguments. When a \texttt{false} argument is encountered for \texttt{and}, the evaluation ends early and the rest of the arguments remain unevaluated. When a \texttt{true} argument is encountered for \texttt{or}, the evaluation ends early and the rest of the arguments remain unevaluated.
+
+\subsection{Arithmetic Functions}
+The arithmetic functions only accept numeric types (\texttt{int} and \texttt{float}) as arguments. However, the arguments do not have to be homogenous in type. If there is at least one \texttt{float}, then an arithmetic function returns a \texttt{float}. Otherwise, it returns an \texttt{int}. If the initial result of the computation is not of the right type, then it will be implicitly converted using the \texttt{trunc} and \texttt{float} functions described in the next section.
+
+A runtime error occurs when calling any of these functions with arguments outside the domain of the equivalent mathematical function e.g.\ division by zero.
+
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (sum ?$x_1$? ?$x_2$? ?$\ldots$? ?$x_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\sum_{i}^{n}{x_i}$, the sum of all arguments. There must be at least two arguments.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (prod ?$x_1$? ?$x_2$? ?$\ldots$? ?$x_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\prod_{i}^{n}{x_i}$, the product of all arguments. There must be at least two arguments.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (diff ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $x - y$, the difference of $x$ and $y$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (neg ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $-x$, the negation of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (inc ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $x + 1$, $x$ incremented by 1.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (dec ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $x - 1$, $x$ decremented by 1.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (div ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $x / y$, a single number that is the result of division with remainder.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (mod ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $x - y$trunc$(\frac{x}{y})$, the remainder of dividing $x$ by $y$ through truncated division. This is the modulo operation.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (expt ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $x^y$, $x$ to the power of $y$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (sqrt ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\sqrt{x}$, the square root of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (log ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\log_{y}{x}$, the logarithm of $x$ to base $y$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (lb ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\log_{2}{x}$, the binary logarithm of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (lg ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\log_{10}{x}$, the common logarithm of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (ln ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\log_{\mathrm{e}}{x}$, the natural logarithm of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (recip ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $\frac{1}{x}$, the reciprocal of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (abs ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns $|x|$, the absolute value of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (min ?$x_1$? ?$x_2$? ?$\ldots$? ?$x_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns the smallest value in $x_1 \ldots x_n$. There must be at least two arguments. Note that even if the smallest value is an \texttt{int}, it will be returned as a \texttt{float} if there's at least one other argument that is a \texttt{float}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (max ?$x_1$? ?$x_2$? ?$\ldots$? ?$x_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns the largest value in $x_1 \ldots x_n$. There must be at least two arguments. Note that even if the largest value is an \texttt{int}, it will be returned as a \texttt{float} if there's at least one other argument that is a \texttt{float}.
+\end{funcdefs}
+
+\subsection{Numeric Conversion Functions}
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (float ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns the \texttt{float} equivalent of an \texttt{int} $x$. For example, \texttt{(float 3)} is $3.0$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (floor ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns $\lfloor x \rfloor$. $x$ must be a \texttt{float}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (ceil ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns $\lceil x \rceil$. $x$ must be a \texttt{float}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (trunc ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns the \texttt{float} $x$ truncated to an \texttt{int}. This rounds towards 0, so $-1.5$ becomes $-1$ and $1.5$ becomes $1$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (round ?$x$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns the \texttt{float} $x$ rounded to the nearest \texttt{int}. If $x$ is exactly halfway, then it rounds towards the even choice. For example, $0.5$ and $-0.5$ round to $0$, and $1.5$ rounds to 2.
+\end{funcdefs}
+
+\subsection{Bit-wise Functions}
+The following functions only accept \texttt{int}s as arguments.
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (logand ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns $x \wedge y$, the bit-wise AND of $x$ and $y$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (logior ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns $x \lor y$, the bit-wise OR of $x$ and $y$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (logxor ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns $x \oplus y$, the bit-wise EXCLUSIVE OR of $x$ and $y$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (lognot ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns $\lnot x$, the bit-wise NOT of $x$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (shift ?$x$? ?$y$?)
+        \end{cminted}
+    \end{minipage}
+    & Returns $x$ arithmetically shifted by $y$ bits. If $y$ is positive, $x$ is shifted to the left. If $y$ is negative, $x$ is shifted to the right.
+\end{funcdefs}
+
+\subsection{List Functions}
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (append ?$e$? ?$l$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns copy of the \texttt{list} $l$ with a new element $e$ at the end of it (it is still terminated with \texttt{nil}). The copy behaves like the built-in \texttt{copy} function. $e$ must have the same type as the elements of $l$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (extend ?$l_1$? ?$l_2$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns a new \texttt{list} which is the combination of the elements of the \texttt{list}s $l_1$ and $l_2$. The elements are copied in order like with the built-in \texttt{copy} function. The elements of $l_2$ follow those of $l_1$. $l_1$ and $l_2$ must have the same type.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (copy ?$l$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns a shallow copy of the \texttt{list} $l$. In a shallow copy, all the top-level elements are copied, but any nested lists are not recursively copied. Thus, for some list \texttt{A}, \texttt{B = (list A)}, and \texttt{C = (copy B)}, \texttt{(eq C B)} is \texttt{false}, \texttt{(equal C B)} is \texttt{true}, and \texttt{(eq (car C) A)} is \texttt{true}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (reverse ?$l$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns a new \texttt{list} which contains the elements of \texttt{list} $l$ in reversed order. Only the top-level elements are reversed; nested keep their internal order. \texttt{nil} is excluded from the reversal and is still at the end to terminate the new list.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (length ?$l$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns an \texttt{int} which is the number of items in the \texttt{list} $l$. The terminating \texttt{nil} is not counted towards the length, and \texttt{(length nil)} is 0.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (efface ?$e$? ?$l$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns a copy of the \texttt{list} $l$ with the first occurrence of the element $e$ removed. $e$ must have the same type as the elements of $l$. Elements are compared using the built-in \texttt{equal} function, so $e$ must not be a \texttt{func} or a \texttt{list} which contains a \texttt{func} at the top level or in any nested list. The copy behaves like the built-in \texttt{copy} function.
+\end{funcdefs}
+
+\subsection{Input and Output}
+Values can be \textit{printed} i.e.\ written to the standard output (\textit{stdout}). However, input is not supported. Values are output using their S-expression representation. The exception to this is functions, which are output as ``<function at \textit{memory-address}>''. Special forms cannot be printed.
+
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (print ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Prints a single line of all arguments concatenated with a space delimiter. The arguments do not need to be homogenous in type. Zero arguments may be given, in which case only a single space character is printed. Returns \texttt{nil}.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (println ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Similar to \texttt{print} except that the line is also terminated with a newline character. Zero arguments may be given, in which case only a single newline character is printed.
+\end{funcdefs}
+
+\subsection{Mapping Functions}
+\begin{funcdefs}
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (map ?$l$? ?$f$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns a \texttt{list} of the results of applying the function $f$ to the list $l$ and to successive \texttt{(cdr $l$)} until $l$ is reduced to \texttt{nil}. $f$ must be a \texttt{func} with a single parameter whose type matches the type of the elements of \texttt{list} $l$.
+    \\ \\
+    \begin{minipage}[t]{\linewidth}
+        \centering
+        \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+            (mapcar ?$l$? ?$f$?)
+        \end{cminted}
+    \end{minipage}
+    & \specialf/ Returns a \texttt{list} of the results of applying the function $f$ to each element of the list $l$, excluding the terminating \texttt{nil}. $f$ must be a \texttt{func} with a single parameter whose type matches the type of the elements of \texttt{list} $l$.
+\end{funcdefs}

@@ -1,0 +1,110 @@
+As in LISP, computation in \lispy/ is done by evaluating \textit{forms}. Forms are specific kinds of S-expressions, typically involving specific types and arrangements of elements within lists. All forms have value, and the value of the form is the result of evaluating it. Forms have already been mentioned, such as for the bodies of lambdas, and lambda expressions themselves. In \lispy/, there are four kinds of forms: elementary forms, simple forms, composed forms, and special forms.
+
+\subsection{Elementary Forms}
+\subsubsection{Variables}
+All variables are elementary forms. A \textit{variable} is an atomic literal that is associated with some value. The atomic literal serves as an identifier or name for the value, meaning the atomic literal can be evaluated to get the associated value. Thus, evaluating a variable results in its associated value.
+
+The process of associating a value with an identifier is called \textit{(name) binding}. A pair of a bound identifier and its value is called a \textit{binding}. An identifier can be re-bound i.e. \textit{assigned} a new value. There is further discussion in~\nameref{sec:bindingassign}.
+
+\subsubsection{Constants}
+All constants are elementary forms. All numbers are constants. Built-in values such as the Booleans \texttt{true} and \texttt{false} are also constants. The result of evaluating a constant is simply that constant itself. For example, the value of \texttt{2.4} is 2.4.
+
+\subsection{Simple Forms}\label{subsec:simpleforms}
+Simple forms consist of a left parenthesis, a function name, 0 or more function arguments, and a right parenthesis. A simple form is used to evaluate a function.
+
+A \textit{function} is a named form that can be re-used in evaluations with different sets of inputs. The form is known as the \textit{body} and the inputs are known as \textit{arguments}. The function is defined with variables known as \textit{parameters}, which are accessible to the body. When a function is \textit{called}, or evaluated, the arguments are bound to the parameters, and the body is evaluated using the bound parameters. The result of evaluation is the \textit{return value}.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+        (?\tikzmark{name_start}?sum?\tikzmark{name_end}? ?\tikzmark{args_start}?1 2 3 4?\tikzmark{args_end}?)
+    \end{cminted}
+    \begin{tikzpicture}[
+        remember picture,
+        overlay,
+        thick,
+        font=\scriptsize,
+        every node/.style={pos=0.5, black}
+    ]
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=3pt}]
+            (pic cs:name_start) -- (pic cs:name_end)
+            node[below=0.5em]{name};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=3pt}]
+            (pic cs:args_start) -- (pic cs:args_end)
+            node[below=0.5em]{arguments};
+    \end{tikzpicture}
+    \captionsetup[figure]{font=small, skip=2em}
+    \captionof{figure}{A simple form.}
+\end{figure}
+
+% TODO: built-in term is mentioned here without being defined.
+The function name is either a built-in function name or any variable whose value has a type of \texttt{func}. The arguments are 0 or more variables or constants.
+
+\subsubsection{Evaluation}
+\begin{enumerate}
+    \item The function name is evaluated to a built-in function or a \texttt{func} value.
+    \item All arguments are evaluated from left to right.
+    \item The function is called with the evaluated arguments.
+    \item The value of the simple form is the value of the function called with the arguments.
+\end{enumerate}
+
+\subsection{Composed Forms} \label{subsec:composedforms}
+Composition of forms is possible, which allows for more complex programs. A \textit{composed form} is a more generalised version of a simple form. Unlike simple forms, each argument can be \textit{any} form (elementary, simple, composed, or special).
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+        (?\tikzmark{name2_start}?prod?\tikzmark{name2_end}? ?\tikzmark{arg2_start}?(div 4 2) ?\tikzmark{sform_start}?(div 6 2)?\tikzmark{sform_end}??\tikzmark{arg2_end}?)
+    \end{cminted}
+    \begin{tikzpicture}[
+        remember picture,
+        overlay,
+        thick,
+        font=\scriptsize,
+        every node/.style={pos=0.5, black}
+    ]
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=3pt}]
+            (pic cs:name2_start) -- (pic cs:name2_end)
+            node[below=0.5em]{function name};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=3pt}]
+            (pic cs:sform_start) -- (pic cs:sform_end)
+            node[below=0.5em]{simple form};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=1.75em, amplitude=3pt}]
+            (pic cs:arg2_start) -- (pic cs:arg2_end)
+            node[below=2em]{arguments};
+    \end{tikzpicture}
+    \captionsetup[figure]{font=small, skip=3.5em}
+    \captionof{figure}{A composed form which evaluates to $(4 \div 2) \times (6 \div 2) = 2 \times 3 = 6$.}
+\end{figure}
+
+\subsubsection{Evaluation}
+\begin{enumerate}
+    \item The function name is evaluated to a built-in function or a \texttt{func} value.
+    \begin{enumerate}
+        \item If the argument is a constant, the constant itself is the value of the argument.
+        \item If the argument is a variable, the associated value is the value of the variable.
+        \item If the argument is a simple form, it is evaluated using the previously described process for simple forms.
+        \item If the argument is a composed form, the partially evaluated arguments are temporarily saved, and steps 1 to 4 are applied recursively to that composed form.
+    \end{enumerate}
+    \item The function is called with the evaluated arguments.
+    \item The value of the composed form is the value of the function called with the arguments.
+\end{enumerate}
+
+However, this is not the complete description of composed forms. The function name can actually be any form which evaluates to a function. Thus, it is more appropriate to call it an expression than a name. This will be shown when discussing the~\nameref{subsec:func} type.
+
+\subsection{Special Forms}
+The language has built-in functions that are available to the programmer. Some superficially appear to be like most functions, but are actually treated differently. These functions are known as \textit{special forms}. Special forms differ from regular functions in how they're evaluated or how they're defined. They can generally be categorised into one or more of the following:
+
+\begin{enumerate}
+    \item Special forms with an indefinite number of arguments.
+    \item Special forms that don't evaluate some or all of their arguments.
+    \item Special forms that allow an argument or return value to be more than one type.
+\end{enumerate}
+
+Note that these kinds of qualities are not achievable with user-defined functions; special forms are implemented using internal facilities not available to the programmer.
+% TODO: Discuss that indef args are implemented by expanding a function to e.g. (cons 1 (cons 2 nil)).
+
+Built-in functions are all accessible through variables. The variables for special forms cannot be assigned new values.

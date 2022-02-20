@@ -1,0 +1,129 @@
+\lispy/ is statically typed. This means type safety (i.e.\ that there are no discrepancies between expected types of values and actual types of values) is verified at compile time by analysing the source code. The language has  a small set of types and a limited (but simple) type system. The language has type inference for everything except function parameters, meaning it can determine the type of a value at compile time without relying on being explicitly told the type by the programmer.
+
+\subsection{int and float}
+There are both integer and rational numbers. The former are \texttt{int}s and the latter are \texttt{float}s (a fixed-point representation). The syntax for them is a bit laxer than it is in LISP 1.5 (see~\nameref{sec:syntax}). However, octal number literals are unsupported. There are also \texttt{float} constants for \texttt{inf} (floating-point positive infinity) and \texttt{nan} (``not a number'').
+
+The behaviour of precision and overflow is implementation-defined. For the reference implementation, these types are implemented using Python's \texttt{int} and \texttt{float} types, so they are subject to the same limitations in \lispy/ as they are in Python. That further depends on the Python interpreter used to run the compiled code.
+
+\subsection{bool}
+The \texttt{bool} type is represented by the literal atoms \texttt{true} and \texttt{false}. This is a replacement for the \texttt{T} and \texttt{NIL} used by predicates in LISP 1.5. Having a single Boolean type makes it simple from a type checking perspective to implement predicates in \lispy/.
+
+% TODO: mention that recursion is possible.
+\subsection{func} \label{subsec:func}
+A \texttt{func} is a function as described in~\nameref{subsec:simpleforms}. The fundamental way to create a function is with a special form know as a \textit{lambda expression}. The resulting function is called a \textit{lambda function}. The distinction from just \textit{function} is that a lambda function is not bound to any name. Thus, to evaluate a lambda function, a composed form has to be used. In fact, the use of a lambda expression in place of a function name is what was being alluded to briefly in the description of~\nameref{subsec:composedforms}. As with function names, the lambda expression is evaluated first in the form, and then the arguments are evaluated.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+        (?\tikzmark{exp_start}?(lambda ?\tikzmark{param_start}?((?\tikzmark{atom_start}?x?\tikzmark{atom_end}? int) (y ?\tikzmark{type_start}?int?\tikzmark{type_end}?))?\tikzmark{param_end}? ?\tikzmark{form_start}?(div x y)?\tikzmark{form_end}?)?\tikzmark{exp_end}? ?\tikzmark{arg_start}?1 2?\tikzmark{arg_end}?)
+    \end{cminted}
+    \begin{tikzpicture}[
+        remember picture,
+        overlay,
+        thick,
+        font=\scriptsize,
+        every node/.style={pos=0.5, black}
+    ]
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=1pt}]
+            (pic cs:atom_start) -- (pic cs:atom_end)
+            node[below=0.5em]{atomic literal};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=3pt}]
+            (pic cs:type_start) -- (pic cs:type_end)
+            node[below=0.5em]{type};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=1.75em, amplitude=3pt}]
+            (pic cs:param_start) -- (pic cs:param_end)
+            node[below=2em]{parameters};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=3pt}]
+            (pic cs:form_start) -- (pic cs:form_end)
+            node[below=0.5em]{body};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=0.25em, amplitude=3pt}]
+            (pic cs:arg_start) -- (pic cs:arg_end)
+            node[below=0.5em]{arguments};
+
+        \draw[decorate, decoration={calligraphic brace, mirror, raise=3.25em, amplitude=5pt}]
+            (pic cs:exp_start) -- (pic cs:exp_end)
+            node[below=3.5em]{lambda expression};
+    \end{tikzpicture}
+    \captionsetup[figure]{font=small, skip=5em}
+    \captionof{figure}{A lambda function being evaluated.}
+\end{figure}
+
+A function's evaluated value (the \textit{return value}) is the result of evaluating the function body with the function variables, which are bound to some values (the \textit{arguments}) prior to evaluation.
+
+Function parameters are defined as pairs, of which there can be 0 or more. The first element of the pair is the name of the parameter. The second element is the type of that parameter. All parameters must be specified with their types; they are never type-inferred. Note that neither element of this pair is evaluated (this is possible because a lambda expression is a special form).
+
+Unlike parameters, the return value and arguments \textit{will} be type inferred. In fact, there is no mechanism in the language for explicitly specifying the type of a return value or argument.
+
+\subsubsection{First-class Functions}
+Functions are \textit{first-class citizens} in the language. This means that, like other values, a function can be passed as an argument to another function, can be returned from other functions, and can be assigned to variables. As a consequence, \textit{higher-order functions} are supported, which are functions that takes a function as an argument and/or return a function.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true]{lisp}
+        (lambda ((f (func (int int) int))
+                 (i int))
+          (f 3 i)
+        )
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{A higher-order function that takes a function \texttt{f} as an argument. \texttt{f} has two \texttt{int} parameters and an \texttt{int} return value.}
+\end{figure}
+
+\paragraph{Special Forms}
+Unlike regular functions, special forms are not first-class citizens. However, this can be worked around by defining a lambda function which ``wraps'' the special form.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true]{lisp}
+        ((lambda ((f (func (int int) int))
+                 (i int))
+          (f 3 i))
+        (lambda ((a int) (b int)) (prod a b)) 2)
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{A lambda function wrapping a special form and being passed to another function. This is effectively doing $3 \times 2 = 6$.}
+\end{figure}
+
+\subsubsection{define}
+Lambda functions are not inherently bound to any variable. However, it can be quite useful to define a function so it can be re-used later. Since lambda functions are first-class citizens, it is valid to assign a lambda expression to a variable.
+
+One way to do this has actually already been shown: rely on the binding mechanism of a lambda expression. A lambda can be bound to another lambda's parameters, and then the lambda will be accessible via a variable within the other lambda. However, this is tedious. A more convenient way to define functions with names is to use the \texttt{define} special form.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+        (define ?$name$? ((x int) (y int))
+          (div x y)
+        )
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{The \texttt{define} special form.}
+\end{figure}
+
+Later, the special form \texttt{set} will be discussed, which is a more general way of creating variables. \texttt{define} is actually equivalent to \texttt{(set $name$ (lambda $\ldots$))}.
+
+\subsection{list}
+The \texttt{list} type stores a homogenous (i.e.\ all of the same type) sequence of elements. Lists always have \texttt{nil} as the final element.
+
+Lists can be created with the special form \texttt{cons}. For example, \texttt{(cons 1 (2 (3 nil)))} creates the list \texttt{(1 2 3)} (the presence of \texttt{nil} is implicit). Notice that the second argument must be a list which holds elements that have the same type as the first argument. Alternatively, the special form \texttt{list}, which takes an indefinite number of arguments, can create the same list: \texttt{(list 1 2 3)}.
+
+The first element of a list can be retrieved using the special form \texttt{car}. For example, \texttt{(car (list 1 2 3))} returns the value \texttt{1}. Conversely, \texttt{cdr} can be used to retrieve the remaining list: \texttt{(cdr (list 1 2 3))} returns the value \texttt{(2 3)}. Both \texttt{car} and \texttt{cdr} only accept one argument, which must be a \texttt{list}.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true]{lisp}
+        (lambda ((n int) (l (list int)))
+          (prod n (car l)))
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{A lambda with a parameter that's a \texttt{list} of \texttt{int}s.}
+\end{figure}
+
+\subsubsection{nil}
+The literal atom \texttt{nil} represents an empty list. Thus, it also has a type of \texttt{list}. In fact, an alternative way to represent \texttt{nil} is \texttt{()}. For \texttt{nil}, \texttt{car} and \texttt{cdr} are unsupported -- attempting to do so will result in a runtime error.
+
+\texttt{nil} is a built-in ``global'' variable that's accessible everywhere. However, it's special as far as variables go because it cannot be assigned a new value.

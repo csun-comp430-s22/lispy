@@ -1,0 +1,40 @@
+An important aspect of binding is understanding where that binding is valid i.e.\ its scope. A binding is said to be \textit{valid} if the binding's name is considered to be associated with the binding's value in the current part of the program. In other parts, the same name may be bound to a different value or not bound at all. A \textit{scope} is the set of all bindings that are valid within a particular context (part) of the whole program.
+
+\paragraph{Lexical Scope and Context}
+\lispy/ is \textit{lexically scoped}, meaning a bound name is resolved based on where the binding was defined. Thus, a ``particular context'' is specifically a lexical context. Generally, a \textit{lexical context} is the boundary of a \textit{lexical unit}. For the discussion of scope, the lexical units that need to be considered are a \texttt{let} expression, a function body, and the whole program.
+
+\paragraph{Nested Scopes}
+A scope can be nested within another scope. A nested scope inherits the bindings of its enclosing scope. Resolution of a bound name is first attempted in the local lexical context. If it fails to find the binding in the local lexical context, then it tries again with the outer lexical context. This is repeated until the outer-most lexical context is reached. Past that, a name is considered to be unbound, and a compiler error occurs.
+
+A variable may be defined using a name that already has a binding in an outer scope. This variable \textit{shadows} the one in the outer scope; according to the name resolution algorithm just described, the inner binding has precedence over the outer binding.
+
+\subsection{Scope Levels}
+There are three levels of scope: global scope, function scope, and expression scope.
+
+\paragraph{Global}
+Global scope is the top level of the program. There is only one global scope, and all other scopes are nested within the global scope. Built-in functions are in the global scope.
+
+\paragraph{Function}
+In a function scope, a binding defined within a function does not extend outside of that function. With lexical scoping, a binding only has scope within the lexical context of the function i.e.\ the boundaries of that function's definition. This means that if the function calls another function, the bindings go out of context (because the other function is defined elsewhere); the bindings cannot be accessed from the called function. When that called function returns, the bindings come back into context.
+
+\paragraph{Expression}
+In an expression scope, a binding has scope within the lexical context of that expression (again, this is lexical scoping). As with functions, bindings go out of context when other functions are called and come back into context when that called function returns. Thus, in a \texttt{let} expression, the initial bindings (the $(a_i\ d_i)$ pairs) are accessible to all forms in the body, but not outside the \texttt{let} expression.
+
+\subsection{set}
+\texttt{set} can create a new binding or rebind an existing variable. When a new binding is created by \texttt{set}, the scope of that binding is the enclosing scope of the \texttt{set} call. It is not possible to create a binding that has a more outer scope.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+        (lambda (a) (progn (set b 2) (prod a b)))
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{The scope of \texttt{b} is the scope of the enclosing lambda function; \texttt{a} and \texttt{b} have the same scope.}
+\end{figure}
+
+For \texttt{set} to rebind an existing variable, that variable has to be in an enclosing scope of the \texttt{set} call i.e.\ it should be possible to resolve that name as described earlier. Otherwise, the name is considered unbound, and a new binding within the enclosing scope is created instead.
+
+\subsection{Closures}
+Nested functions complicate the matter. First, because a nested function is defined within the local lexical context, calling it does not cause bindings to go out of context. The nested function will have access to its own bindings and those of its enclosing scope. However, the enclosing scope will not have access to the nested function's bindings.
+
+Second, because functions are first-class citizens, they can be returned and called from other contexts. This means the compiler must create a closure to store copies of the required non-local variables (names that only resolve in an enclosing context). A \textit{closure} is a pair of a function and the set of non-local variables that are used within the function. Thus, even if the function is called outside its defined context, it will have access to all the variables it depends on.

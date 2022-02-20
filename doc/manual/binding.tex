@@ -1,0 +1,47 @@
+Recall that variables can be bound to values, and existing variables can be assigned new values. This section deals with how these operations are performed in the language.
+
+But first, clarification is needed on what constitutes a valid name for a binding. Generally, a valid name is any atomic literal. This means numbers and the Boolean constants \texttt{true} and \texttt{false} are not valid names. Special forms cannot be assigned new values. However, built-in function names (including special form names) can be used as names for new bindings. This results in \textit{shadowing}, a subject explained in~\nameref{sec:scope}.
+
+\subsection{let}
+A way to bind variables was introduced with lambda expressions. However, as with the problem \texttt{progn} solves, writing lambdas for this becomes tedious. Instead, the special form \texttt{let} can be used to bind variables. It can be thought of as a more powerful version of \texttt{progn}.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+        (let ((?$a_1$? ?$d_1$?) (?$a_2$? ?$d_2$?) ?$\ldots$? (?$a_n$? ?$d_n$?)) ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{The \texttt{let} special form.}
+\end{figure}
+
+\texttt{let} has one or more pairs of bindings $(a_i\ d_i)$ followed by one or more forms $e_1 \ldots e_n$. The forms $e_1 \ldots e_n$, collectively known as the \textit{body}, have the same semantics as in \texttt{progn}, except for the benefit of also having access to the variable bindings that precede them. The binding is performed left to right from $(a_1\ d_1)$ to $(a_n\ d_n)$. $d_i$ is the form to evaluate and bind to $a_i$, which is the name of the variable. Just like in lambda expressions, the variable name $a_i$ is not evaluated. As with \texttt{progn}, \texttt{let} returns the value of the last form, $e_n$.
+
+The bindings are performed in parallel, meaning $d_i$ cannot use any of $a_1 \ldots a_n$.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true]{lisp}
+        (let ((a 2) (b (prod a 2))) b)
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{An invalid use of bindings in \texttt{let}; \texttt{a} cannot be used for \texttt{b}'s definition.}
+\end{figure}
+
+Notice that each variable must have an initial value it's bound to. Because of this requirement, it is possible to infer the type of each variable. Hence, there is no need (nor is there a way) to explicitly specify the type of each variable.
+% TODO: show how let translates to a lambda that is immediately called.
+
+\subsection{set}
+The special form \texttt{set} is a simpler way to create a single binding. It can also be used to assign a new value to a variable.
+
+\begin{figure}[htp]
+    \centering
+    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
+        (set ?$name$? ?$value$?)
+    \end{cminted}
+    \captionsetup[figure]{font=small}
+    \captionof{figure}{The \texttt{set} special form.}
+\end{figure}
+
+$name$ and $value$ are similar to the binding pairs of \texttt{let}. $name$ can either be the name of a new variable, or the name of an existing variable that is currently accessible. In the former case, a new binding is created. In the latter case, the variable is rebound to the new value, and the value must have the same type as value being overwritten. \texttt{set} returns $value$.
+
+Unlike \texttt{let}, \texttt{set} doesn't have any following forms that have access to the binding. So, from where will this new binding be accessible? This is discussed in the following section on scope.
