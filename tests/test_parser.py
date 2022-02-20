@@ -1,4 +1,5 @@
 import math
+import string
 
 import pytest
 from lark.exceptions import UnexpectedCharacters
@@ -33,6 +34,27 @@ CONSTANT_PARAMS = [
     ("-inf", float("-inf")),
 ]
 
+ATOMIC_LITERAL_PARAMS = ["a", "A", "dKa", "AxZ", "_", "_____", "_12", "c12", "d1G_", "atom2_3name1"]
+
+INVALID_ATOM_PARAMS = [
+    "0e",
+    "12e",
+    "9.e",
+    "+",
+    "-",
+    "+e",
+    "-e",
+    ".",
+    ".e123",
+    "123atom",
+    "+true",
+    "-false",
+    "my-atom",
+    "-atomname",
+    "äöåü",
+    *[f"my{c}atom" for c in set(string.punctuation) - {"(", ")", "_"}],
+]
+
 LIST_PARAMS = [
     ("(+1)", [1]),
     ("(-2.4)", [-2.4]),
@@ -61,8 +83,15 @@ def test_nan(program):
     assert math.isnan(atom.value)
 
 
-@pytest.mark.parametrize("program", ["0e", "12e", "+", "-", "+e", "-e", ".", ".e123", "123atom"])
-def test_invalid_atoms(program):
+@pytest.mark.parametrize("program", ATOMIC_LITERAL_PARAMS)
+def test_atomic_literal(program):
+    ast = parser.parse(program)
+
+    assert ast == [program]
+
+
+@pytest.mark.parametrize("program", INVALID_ATOM_PARAMS)
+def test_invalid_atom(program):
     with pytest.raises(UnexpectedCharacters):
         parser.parse(program)
 
