@@ -33,6 +33,16 @@ CONSTANT_PARAMS = [
     ("-inf", float("-inf")),
 ]
 
+LIST_PARAMS = [
+    ("(+1)", [1]),
+    ("(-2.4)", [-2.4]),
+    ("(true)", [True]),
+    ("(-inf)", [float("-inf")]),
+    ("(false 12.3e2 -54 my_atom atom2 true)", [False, 12.3e2, -54, "my_atom", "atom2", True]),
+    ("(9e-2 true +2.3 atom -92 atom1)", [9e-2, True, +2.3, "atom", -92, "atom1"]),
+    ("()", []),
+]
+
 
 @pytest.mark.parametrize(["program", "value"], CONSTANT_PARAMS)
 def test_constant(program, value):
@@ -61,3 +71,10 @@ def test_invalid_atoms(program):
 def test_consecutive_atoms_require_whitespace(program):
     with pytest.raises(UnexpectedCharacters):
         parser.parse(program)
+
+
+@pytest.mark.parametrize(["program", "value"], LIST_PARAMS)
+def test_list(program, value):
+    ast = parser.parse(program)
+
+    assert ast == [value]
