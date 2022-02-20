@@ -231,7 +231,7 @@ The \texttt{bool} type is represented by the literal atoms \texttt{true} and \te
 
 % TODO: mention that recursion is possible.
 \subsection{func} \label{subsec:func}
-A \texttt{func} is a function as described in~\nameref{subsec:simpleforms}. The fundamental way to create a function is with a special form know as a \textit{lambda expression}. The resulting function is called a \textit{lambda function}. The distinction from just \textit{function} is that a lambda function is not bound to any name. Thus, to evaluate a lambda function, a composed form has to be used. In fact, the use of a lambda expression in place of a function name is what was being alluded to briefly in the description of~\nameref{subsec:composedforms}. As with function names, the lambda expression is evaluate first in the form, and then the arguments are evaluated.
+A \texttt{func} is a function as described in~\nameref{subsec:simpleforms}. The fundamental way to create a function is with a special form know as a \textit{lambda expression}. The resulting function is called a \textit{lambda function}. The distinction from just \textit{function} is that a lambda function is not bound to any name. Thus, to evaluate a lambda function, a composed form has to be used. In fact, the use of a lambda expression in place of a function name is what was being alluded to briefly in the description of~\nameref{subsec:composedforms}. As with function names, the lambda expression is evaluated first in the form, and then the arguments are evaluated.
 
 \begin{figure}[htp]
     \centering
@@ -615,7 +615,7 @@ While discussing functions here, all arguments can be assumed to be evaluated un
 \subsection{Arithmetic Functions}
 The arithmetic functions only accept numeric types (\texttt{int} and \texttt{float}) as arguments. However, the arguments do not have to be homogenous in type. If there is at least one \texttt{float}, then an arithmetic function returns a \texttt{float}. Otherwise, it returns an \texttt{int}. If the initial result of the computation is not of the right type, then it will be implicitly converted using the \texttt{trunc} and \texttt{float} functions described in the next section.
 
-A runtime error occurs when calling any of these functions with arguments outside the domain of the equivalent mathematic function e.g. division by zero.
+A runtime error occurs when calling any of these functions with arguments outside the domain of the equivalent mathematical function e.g. division by zero.
 
 \begin{funcdefs}
     \begin{minipage}[t]{\linewidth}
@@ -911,7 +911,7 @@ Values can be \textit{printed} i.e. written to the standard output (\textit{stdo
             (print ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
         \end{cminted}
     \end{minipage}
-    & \specialf/ Prints a single line of all arguments concatenate with a space delimiter. The arguments do not need to be homogenous in type. Zero arguments may be given, in which case only a single space character is printed. Returns \texttt{nil}.
+    & \specialf/ Prints a single line of all arguments concatenated with a space delimiter. The arguments do not need to be homogenous in type. Zero arguments may be given, in which case only a single space character is printed. Returns \texttt{nil}.
     \\ \\
     \begin{minipage}[t]{\linewidth}
         \centering
