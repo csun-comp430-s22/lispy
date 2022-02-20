@@ -22,14 +22,13 @@ class AstTransformer(lark.Transformer):
         return lark.visitors.Discard
 
 
+with open("resources/grammar.lark", "r", encoding="utf8") as _f:
+    _grammar = _f.read()
+    _parser = Lark(_grammar, start="program", propagate_positions=True, maybe_placeholders=False)
+    _transformer = ast_utils.create_transformer(nodes, AstTransformer())
+
+
 def parse(program: str) -> nodes.Program:
     """Parse a lispy program into an AST."""
-    with open("resources/grammar.lark", "r", encoding="utf8") as f:
-        grammar = f.read()
-
-    parser = Lark(grammar, start="program", propagate_positions=True, maybe_placeholders=False)
-    transformer = ast_utils.create_transformer(nodes, AstTransformer())
-
-    tree = parser.parse(program)
-
-    return transformer.transform(tree)
+    tree = _parser.parse(program)
+    return _transformer.transform(tree)
