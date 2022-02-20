@@ -58,3 +58,9 @@ def test_nan(program):
 def test_invalid_atoms(program):
     with pytest.raises(UnexpectedCharacters):
         parser.parse(program)
+
+
+@pytest.mark.parametrize("program", ["1e", "()1e()", "(a b) 4dd", "77x (2 y)", "(5j)"])
+def test_consecutive_atoms_require_whitespace(program):
+    with pytest.raises(UnexpectedCharacters):
+        parser.parse(program)
