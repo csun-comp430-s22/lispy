@@ -27,7 +27,7 @@ def parse(program: str) -> nodes.Program:
     with open("resources/grammar.lark", "r", encoding="utf8") as f:
         grammar = f.read()
 
-    parser = Lark(grammar, start="program")
+    parser = Lark(grammar, start="program", propagate_positions=True, maybe_placeholders=False)
     transformer = ast_utils.create_transformer(nodes, AstTransformer())
 
     tree = parser.parse(program)
