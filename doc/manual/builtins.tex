@@ -104,7 +104,7 @@ While discussing functions here, all arguments can be assumed to be evaluated un
             (and ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
         \end{cminted}
     \end{minipage}
-    & \specialf/ Returns \texttt{true} if all $e_1 \ldots e_n$ are \texttt{true}. Otherwise, returns \texttt{false}. $e_1 \ldots e_n$ must all be \texttt{bool}s.
+    & \specialf/ Returns \texttt{true} if all $e_1 \ldots e_n$ are \texttt{true}. Otherwise, returns \texttt{false}. $e_1 \ldots e_n$ must all be \texttt{bool}s. There must be at least two arguments.
     \\ \\
     \begin{minipage}[t]{\linewidth}
         \centering
@@ -112,7 +112,7 @@ While discussing functions here, all arguments can be assumed to be evaluated un
             (or ?$e_1$? ?$e_2$? ?$\ldots$? ?$e_n$?)
         \end{cminted}
     \end{minipage}
-    & \specialf/ Returns \texttt{true} if any of $e_1 \ldots e_n$ are \texttt{true}. Otherwise, returns \texttt{false}. $e_1 \ldots e_n$ must all be \texttt{bool}s.
+    & \specialf/ Returns \texttt{true} if any of $e_1 \ldots e_n$ are \texttt{true}. Otherwise, returns \texttt{false}. $e_1 \ldots e_n$ must all be \texttt{bool}s. There must be at least two arguments.
 \end{funcdefs}
 
 \noindent \texttt{and} and \texttt{or} don't always evaluate all arguments. When a \texttt{false} argument is encountered for \texttt{and}, the evaluation ends early and the rest of the arguments remain unevaluated. When a \texttt{true} argument is encountered for \texttt{or}, the evaluation ends early and the rest of the arguments remain unevaluated.
