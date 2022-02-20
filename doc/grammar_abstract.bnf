@@ -21,9 +21,8 @@
 <select> ::= "(" "select" <form> <branch>+ <form> ")"
 
 <elementary-form> ::= <const> | <name>
-<simple-form> ::= "(" <name> <elementary-form>* ")"
 <composed-form> ::= "(" <form> <form>* ")"
 <special-form> ::= <lambda> | <define> | <progn> | <let> | <cond> | <select>
-<form> :: = <elementary-form> | <simple-form> | <composed-form> | <special-form>
+<form> ::= <elementary-form> | <composed-form> | <special-form>
 
 <program> ::= <form>*
