@@ -1,13 +1,10 @@
-%import common.DIGIT
-%import common.LETTER
+%import common.CNAME -> LITERAL_ATOM
 %import common.SIGNED_INT
 %import common.SIGNED_FLOAT
 %import common.WS
 
 %ignore WS
 
-// Literal atoms must start with a letter.
-LITERAL_ATOM: LETTER (LETTER | DIGIT)*
 BOOL: "true" | "false"
 FLOAT: SIGNED_FLOAT
      | ["+" | "-"] ("inf" | "nan")
