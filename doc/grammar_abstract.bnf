@@ -11,7 +11,13 @@
 
 <define> ::= "(" "define" <name> "(" <func-param>* ")" <form> ")"
 
+<list> ::= "(" "list" <form>* ")"
+<cons> ::= "(" "cons" <form> <form> ")"
+<car> ::= "(" "car" <form> ")"
+<cdr> ::= "(" "cdr" <form> ")"
+
 <progn> ::= "(" "progn" <form> <form>+ ")"
+<set> ::= "(" "set" <name> <form> ")"
 
 <let-binding> ::= "(" <name> <form> ")"
 <let> ::= "(" "let" "(" <let-binding>+ ")" <form>+ ")"
@@ -22,7 +28,75 @@
 
 <elementary-form> ::= <const> | <name>
 <composed-form> ::= "(" <form> <form>* ")"
-<special-form> ::= <lambda> | <define> | <progn> | <let> | <cond> | <select>
-<form> ::= <elementary-form> | <composed-form> | <special-form>
+<special-form> ::= <lambda> | <define> | <list> | <cons> | <car> | <cdr>
+                 | <progn> | <set> | <let> | <cond> | <select> | <eq> | <equal>
+                 | <evenp> | <lessp> | <null> | <member> | <and> | <or> | <sum>
+                 | <prod> | <diff> | <neg> | <inc> | <dec> | <div> | <mod>
+                 | <expt> | <sqrt> | <log> | <lb> | <lg> | <ln> | <recip>
+                 | <abs> | <min> | <max> | <append> | <extend> | <copy>
+                 | <reverse> | <length> | <efface> | <print> | <println>
+                 | <map> | <mapcar>
+<builtin-form> ::= <greaterp> | <not> | <float> | <floor> | <ceil> | <trunc>
+                 | <round> | <logand> | <logior> | <logxor> | <lognot>
+                 | <shift>
+<form> ::= <elementary-form> | <composed-form> | <special-form> | <builtin-form>
 
 <program> ::= <form>*
+
+<eq> ::= "(" "eq" <form> <form> ")"
+<equal> ::= "(" "equal" <form> <form> ")"
+
+<greaterp> ::= "(" "greaterp" <form> <form> ")"
+<evenp> ::= "(" "evenp" <form> <form> ")"
+<lessp> ::= "(" "lessp" <form> <form> ")"
+
+<null> ::= "(" "null" <form> ")"
+<member> ::= "(" "member" <form> <form> ")"
+
+<not> ::= "(" "not" <form> ")"
+<and> ::= "(" "and" <form> <form>+ ")"
+<or> ::= "(" "or" <form> <form>+ ")"
+
+<sum> ::= "(" "sum" <form> <form>+ ")"
+<prod> ::= "(" "prod" <form> <form>+ ")"
+<diff> ::= "(" "diff" <form> <form> ")"
+<neg> ::= "(" "neg" <form> ")"
+<inc> ::= "(" "inc" <form> ")"
+<dec> ::= "(" "dec" <form> ")"
+<div> ::= "(" "div" <form> <form> ")"
+<mod> ::= "(" "mod" <form> <form> ")"
+<expt> ::= "(" "expt" <form> <form> ")"
+<sqrt> ::= "(" "sqrt" <form> ")"
+<log> ::= "(" "log" <form> <form> ")"
+<lb> ::= "(" "lb" <form> ")"
+<lg> ::= "(" "lg" <form> ")"
+<ln> ::= "(" "ln" <form> ")"
+<recip> ::= "(" "recip" <form> ")"
+<abs> ::= "(" "abs" <form> ")"
+<min> ::= "(" "min" <form> <form>+ ")"
+<max> ::= "(" "max" <form> <form>+ ")"
+
+<float> ::= "(" "float" <form> ")"
+<floor> ::= "(" "floor" <form> ")"
+<ceil> ::= "(" "ceil" <form> ")"
+<trunc> ::= "(" "trunc" <form> ")"
+<round> ::= "(" "round" <form> ")"
+
+<logand> ::= "(" "logand" <form> <form> ")"
+<logior> ::= "(" "logior" <form> <form> ")"
+<logxor> ::= "(" "logxor" <form> <form> ")"
+<lognot> ::= "(" "lognot" <form> <form> ")"
+<shift> ::= "(" "shift" <form> <form> ")"
+
+<append> ::= "(" "append" <form> <form> ")"
+<extend> ::= "(" "extend" <form>  ")"
+<copy> ::= "(" "copy" <form> ")"
+<reverse> ::= "(" "reverse" <form> ")"
+<length> ::= "(" "length" <form> ")"
+<efface> ::= "(" "efface" <form> <form> ")"
+
+<print> ::= "(" "print" <form>* ")"
+<println> ::= "(" "println" <form>* ")"
+
+<map> ::= "(" "map" <form> <form> ")"
+<mapcar> ::= "(" "mapcar" <form> <form> ")"
