@@ -9,7 +9,7 @@ A scope can be nested within another scope. A nested scope inherits the bindings
 A variable may be defined using a name that already has a binding in an outer scope. This variable \textit{shadows} the one in the outer scope; according to the name resolution algorithm just described, the inner binding has precedence over the outer binding.
 
 \subsection{Scope Levels}
-There are three levels of scope: global scope, function scope, and expression scope.
+There are three levels of scope: global scope, function scope, and \texttt{let} scope.
 
 \paragraph{Global}
 Global scope is the top level of the program. There is only one global scope, and all other scopes are nested within the global scope. Built-in functions are in the global scope.
@@ -17,8 +17,8 @@ Global scope is the top level of the program. There is only one global scope, an
 \paragraph{Function}
 In a function scope, a binding defined within a function does not extend outside of that function. With lexical scoping, a binding only has scope within the lexical context of the function i.e.\ the boundaries of that function's definition. This means that if the function calls another function, the bindings go out of context (because the other function is defined elsewhere); the bindings cannot be accessed from the called function. When that called function returns, the bindings come back into context.
 
-\paragraph{Expression}
-In an expression scope, a binding has scope within the lexical context of that expression (again, this is lexical scoping). As with functions, bindings go out of context when other functions are called and come back into context when that called function returns. Thus, in a \texttt{let} expression, the initial bindings (the $(a_i\ d_i)$ pairs) are accessible to all forms in the body, but not outside the \texttt{let} expression.
+\paragraph{let}
+In a \texttt{let} scope, a binding has scope within the lexical context of that \texttt{let} expression (again, this is lexical scoping). As with functions, bindings go out of context when other functions are called and come back into context when that called function returns. Thus, the initial bindings (the $(a_i\ d_i)$ pairs) are accessible to all forms in the body, but not outside the \texttt{let} expression.
 
 \subsection{set}
 \texttt{set} can create a new binding or rebind an existing variable. When a new binding is created by \texttt{set}, the scope of that binding is the enclosing scope of the \texttt{set} call. It is not possible to create a binding that has a more outer scope.
