@@ -46,7 +46,7 @@
 \lispy/ is a compiled, statically typed, lexically scoped, and type-inferred LISP-like language. Rather than being based on the more modern and complex dialects of LISP, \lispy/ is based on LISP 1.5, as described in \href{https://www.lispmachine.net/books/LISP_1.5_Programmers_Manual.pdf}{\textit{LISP 1.5 Programmer's Manual}} (McCarthy et al., 1985) and \href{http://www.softwarepreservation.org/projects/LISP/book/Weismann_LISP1.5_Primer_1967.pdf}{\textit{LISP 1.5 Primer}} (Weismann, 1967). However, it has significant adjustments and deviations from LISP 1.5. This helps the language stay small and manageable, but a lot of the differences also stem from the need to make the language statically typed rather than dynamically typed.
 
 \section{S-expressions}
-The fundamental syntactic element of the language is the \textit{S-expression}. An S-expression is a branching binary tree structure of an indefinite length. In its simplest form, an S-expression is defined as either an atom or an expression \texttt{(A . B)} where \texttt{A} and \texttt{B} are S-expressions. However, \lispy/ does not support the dot notation for S-expressions; it only supports the list notation e.g. \texttt{(A B)}. This is not equivalent to the previous expression. In the list notation, there is an implicit \texttt{nil} as the last element i.e. it is equivalent to \texttt{(A . (B . nil))}. This has a significant implication in that it's impossible to represent data like \texttt{(A . B)}. In the context of a binary tree, this restriction means that the right leaves are always \texttt{nil}. \texttt{nil} will be discussed in more detail later.
+The fundamental syntactic element of the language is the \textit{S-expression}. An S-expression is a branching binary tree structure of an indefinite length. In its simplest form, an S-expression is defined as either an atom or an expression \texttt{(A . B)} where \texttt{A} and \texttt{B} are S-expressions. However, \lispy/ does not support the dot notation for S-expressions; it only supports the list notation e.g. \texttt{(A B)}. This is not equivalent to the previous expression. In the list notation, there is an implicit \texttt{nil} as the last element i.e.\ it is equivalent to \texttt{(A . (B . nil))}. This has a significant implication in that it's impossible to represent data like \texttt{(A . B)}. In the context of a binary tree, this restriction means that the right leaves are always \texttt{nil}. \texttt{nil} will be discussed in more detail later.
 
 \begin{figure}[htb]
     \centering
@@ -219,7 +219,7 @@ The top level may have zero or more S-expressions with any amount of whitespace 
 As an example, given the LISP 1.5 program \texttt{MAX (1 2)}, the equivalent in \lispy/ is \texttt{(max 1 2)}. For those familiar with LISP 1.5, \lispy/ effectively uses \texttt{EVAL} at the top level rather than \texttt{EVALQUOTE}, which makes it more akin to the modern LISP dialects.
 
 \section{Types}
-\lispy/ is statically typed. This means type safety (i.e. that there are no discrepancies between expected types of values and actual types of values) is verified at compile time by analysing the source code. The language has  a small set of types and a limited (but simple) type system. The language has type inference for everything except function parameters, meaning it can determine the type of a value at compile time without relying on being explicitly told the type by the programmer.
+\lispy/ is statically typed. This means type safety (i.e.\ that there are no discrepancies between expected types of values and actual types of values) is verified at compile time by analysing the source code. The language has  a small set of types and a limited (but simple) type system. The language has type inference for everything except function parameters, meaning it can determine the type of a value at compile time without relying on being explicitly told the type by the programmer.
 
 \subsection{int and float}
 There are both integer and rational numbers. The former are \texttt{int}s and the latter are \texttt{float}s (a fixed-point representation). The syntax for them is a bit laxer than it is in LISP 1.5 (see~\nameref{sec:syntax}). However, octal number literals are unsupported. There are also \texttt{float} constants for \texttt{inf} (floating-point positive infinity) and \texttt{nan} (``not a number'').
@@ -328,7 +328,7 @@ One way to do this has actually already been shown: rely on the binding mechanis
 Later, the special form \texttt{set} will be discussed, which is a more general way of creating variables. \texttt{define} is actually equivalent to \texttt{(set $name$ (lambda $\ldots$))}.
 
 \subsection{list}
-The \texttt{list} type stores a homogenous (i.e. all of the same type) sequence of elements. Lists always have \texttt{nil} as the final element.
+The \texttt{list} type stores a homogenous (i.e.\ all of the same type) sequence of elements. Lists always have \texttt{nil} as the final element.
 
 Lists can be created with the special form \texttt{cons}. For example, \texttt{(cons 1 (2 (3 nil)))} creates the list \texttt{(1 2 3)} (the presence of \texttt{nil} is implicit). Notice that the second argument must be a list which holds elements that have the same type as the first argument. Alternatively, the special form \texttt{list}, which takes an indefinite number of arguments, can create the same list: \texttt{(list 1 2 3)}.
 
@@ -451,7 +451,7 @@ $name$ and $value$ are similar to the binding pairs of \texttt{let}. $name$ can 
 Unlike \texttt{let}, \texttt{set} doesn't have any following forms that have access to the binding. So, from where will this new binding be accessible? This is discussed in the following section on scope.
 
 \section{Scope} \label{sec:scope}
-An important aspect of binding is understanding where that binding is valid i.e. its scope. A binding is said to be \textit{valid} if the binding's name is considered to be associated with the binding's value in the current part of the program. In other parts, the same name may be bound to a different value or not bound at all. A \textit{scope} is the set of all bindings that are valid within a particular context (part) of the whole program.
+An important aspect of binding is understanding where that binding is valid i.e.\ its scope. A binding is said to be \textit{valid} if the binding's name is considered to be associated with the binding's value in the current part of the program. In other parts, the same name may be bound to a different value or not bound at all. A \textit{scope} is the set of all bindings that are valid within a particular context (part) of the whole program.
 
 \paragraph{Lexical Scope and Context}
 \lispy/ is \textit{lexically scoped}, meaning a bound name is resolved based on where the binding was defined. Thus, a ``particular context'' is specifically a lexical context. Generally, a \textit{lexical context} is the boundary of a \textit{lexical unit}. For the discussion of scope, the lexical units that need to be considered are a \texttt{let} expression, a function body, and the whole program.
@@ -468,7 +468,7 @@ There are three levels of scope: global scope, function scope, and expression sc
 Global scope is the top level of the program. There is only one global scope, and all other scopes are nested within the global scope. Built-in functions are in the global scope.
 
 \paragraph{Function}
-In a function scope, a binding defined within a function does not extend outside of that function. With lexical scoping, a binding only has scope within the lexical context of the function i.e. the boundaries of that function's definition. This means that if the function calls another function, the bindings go out of context (because the other function is defined elsewhere); the bindings cannot be accessed from the called function. When that called function returns, the bindings come back into context.
+In a function scope, a binding defined within a function does not extend outside of that function. With lexical scoping, a binding only has scope within the lexical context of the function i.e.\ the boundaries of that function's definition. This means that if the function calls another function, the bindings go out of context (because the other function is defined elsewhere); the bindings cannot be accessed from the called function. When that called function returns, the bindings come back into context.
 
 \paragraph{Expression}
 In an expression scope, a binding has scope within the lexical context of that expression (again, this is lexical scoping). As with functions, bindings go out of context when other functions are called and come back into context when that called function returns. Thus, in a \texttt{let} expression, the initial bindings (the $(a_i\ d_i)$ pairs) are accessible to all forms in the body, but not outside the \texttt{let} expression.
@@ -485,7 +485,7 @@ In an expression scope, a binding has scope within the lexical context of that e
     \captionof{figure}{The scope of \texttt{b} is the scope of the enclosing lambda function; \texttt{a} and \texttt{b} have the same scope.}
 \end{figure}
 
-For \texttt{set} to rebind an existing variable, that variable has to be in an enclosing scope of the \texttt{set} call i.e. it should be possible to resolve that name as described earlier. Otherwise, the name is considered unbound, and a new binding within the enclosing scope is created instead.
+For \texttt{set} to rebind an existing variable, that variable has to be in an enclosing scope of the \texttt{set} call i.e.\ it should be possible to resolve that name as described earlier. Otherwise, the name is considered unbound, and a new binding within the enclosing scope is created instead.
 
 \subsection{Closures}
 Nested functions complicate the matter. First, because a nested function is defined within the local lexical context, calling it does not cause bindings to go out of context. The nested function will have access to its own bindings and those of its enclosing scope. However, the enclosing scope will not have access to the nested function's bindings.
@@ -615,7 +615,7 @@ While discussing functions here, all arguments can be assumed to be evaluated un
 \subsection{Arithmetic Functions}
 The arithmetic functions only accept numeric types (\texttt{int} and \texttt{float}) as arguments. However, the arguments do not have to be homogenous in type. If there is at least one \texttt{float}, then an arithmetic function returns a \texttt{float}. Otherwise, it returns an \texttt{int}. If the initial result of the computation is not of the right type, then it will be implicitly converted using the \texttt{trunc} and \texttt{float} functions described in the next section.
 
-A runtime error occurs when calling any of these functions with arguments outside the domain of the equivalent mathematical function e.g. division by zero.
+A runtime error occurs when calling any of these functions with arguments outside the domain of the equivalent mathematical function e.g.\ division by zero.
 
 \begin{funcdefs}
     \begin{minipage}[t]{\linewidth}
@@ -902,7 +902,7 @@ The following functions only accept \texttt{int}s as arguments.
 \end{funcdefs}
 
 \subsection{Input and Output}
-Values can be \textit{printed} i.e. written to the standard output (\textit{stdout}). However, input is not supported. Values are output using their S-expression representation. The exception to this is functions, which are output as ``<function at \textit{memory-address}>''. Special forms cannot be printed.
+Values can be \textit{printed} i.e.\ written to the standard output (\textit{stdout}). However, input is not supported. Values are output using their S-expression representation. The exception to this is functions, which are output as ``<function at \textit{memory-address}>''. Special forms cannot be printed.
 
 \begin{funcdefs}
     \begin{minipage}[t]{\linewidth}
