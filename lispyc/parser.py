@@ -11,8 +11,11 @@ class AstTransformer(lark.Transformer):
 
     SIGNED_INT = int
     FLOAT = float
-    BOOL = bool
     LITERAL_ATOM = str
+
+    def BOOL(self, token: lark.Token) -> bool:  # noqa: N802
+        """Convert the current token to a Python `bool`."""
+        return token == "true"
 
     def WS(self, _: lark.Token) -> lark.visitors.Discard:  # noqa: N802
         """Discard the current whitespace token."""
