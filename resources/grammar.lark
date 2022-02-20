@@ -6,24 +6,19 @@
 
 %ignore WS
 
-FLOAT: SIGNED_FLOAT
-     | ["+" | "-"] ("inf" | "nan")
-
 // Literal atoms must start with a letter.
 LITERAL_ATOM: LETTER (LETTER | DIGIT)*
 BOOL: "true" | "false"
-atom: SIGNED_INT | FLOAT | BOOL | LITERAL_ATOM
+FLOAT: SIGNED_FLOAT
+     | ["+" | "-"] ("inf" | "nan")
 
-// Empty lists are valid too.
-// List elements must be delimited by >= 1 ws.
-list: (_s_expression WS)* _s_expression | WS*
-_sexp_non_atomic: WS* "(" list ")" WS*
-_sexp_atomic: WS* atom WS*
-_s_expression: _sexp_atomic | _sexp_non_atomic
+atom: WS* (SIGNED_INT | FLOAT | BOOL | LITERAL_ATOM) WS*
+list: WS* "(" _expressions ")" WS*
+program: _expressions
 
-// Consecutive atoms must be separated by >= 1 ws.
-_atoms: _sexp_atomic (WS _sexp_atomic)*
-program: WS*
-       | _atoms
-       | (_atoms? _sexp_non_atomic+)+
-       | (_sexp_non_atomic+ _atoms?)+
+// Empty lists/programs are valid too.
+// Atoms must be delimited by >= 1 ws.
+_expressions: WS*
+            | atom (WS atom)*
+            | (_expressions? list)+
+            | (list _expressions?)+
