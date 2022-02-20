@@ -25,4 +25,5 @@ _s_expression: _sexp_atomic | _sexp_non_atomic
 _atoms: _sexp_atomic (WS _sexp_atomic)*
 program: WS*
        | _atoms
-       | (_atoms? _sexp_non_atomic+ _atoms?)+
+       | (_atoms? _sexp_non_atomic+)+
+       | (_sexp_non_atomic+ _atoms?)+
