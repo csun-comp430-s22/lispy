@@ -38,10 +38,7 @@ CONSTANT_PARAMS = [
 def test_constant(program, value):
     ast = parser.parse(program)
 
-    assert len(ast.body) == 1
-    atom = ast.body[0]
-    assert isinstance(atom, nodes.Atom)
-    assert atom.value == value
+    assert ast == [value]
 
 
 @pytest.mark.parametrize("program", ["nan", "+nan", "-nan"])

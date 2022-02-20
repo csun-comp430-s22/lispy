@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 import lark
 from lark import ast_utils
@@ -27,6 +28,12 @@ class Atom(SExpression):
 
     value: str | int | float | bool
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, Atom):
+            return self.value == other.value
+        else:
+            return self.value == other
+
 
 @dataclass
 class List(SExpression, ast_utils.AsList):
@@ -38,6 +45,12 @@ class List(SExpression, ast_utils.AsList):
 
     elements: list[SExpression]
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, List):
+            return self.elements == other.elements
+        else:
+            return self.elements == other
+
 
 @dataclass
 class Program(Node, ast_utils.AsList):
@@ -48,3 +61,9 @@ class Program(Node, ast_utils.AsList):
     """
 
     body: list[SExpression]
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, Program):
+            return self.body == other.body
+        else:
+            return self.body == other
