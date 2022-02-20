@@ -1,6 +1,7 @@
 import math
 
 import pytest
+from lark.exceptions import UnexpectedCharacters
 
 from lispyc import nodes, parser
 
@@ -51,3 +52,9 @@ def test_nan(program):
     atom = ast.body[0]
     assert isinstance(atom, nodes.Atom)
     assert math.isnan(atom.value)
+
+
+@pytest.mark.parametrize("program", ["0e", "12e", "+", "-", "+e", "-e", ".", ".e123", "123atom"])
+def test_invalid_atoms(program):
+    with pytest.raises(UnexpectedCharacters):
+        parser.parse(program)
