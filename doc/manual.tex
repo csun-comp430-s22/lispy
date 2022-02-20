@@ -108,7 +108,7 @@ As in LISP, computation in \lispy/ is done by evaluating \textit{forms}. Forms a
 \subsubsection{Variables}
 All variables are elementary forms. A \textit{variable} is an atomic literal that is associated with some value. The atomic literal serves as an identifier or name for the value, meaning the atomic literal can be evaluated to get the associated value. Thus, evaluating a variable results in its associated value.
 
-The process of associating a value with an identifier is called \textit{(name) binding}. A pair of a bound identifier and its value is called a \textit{binding}. An identifier can be re-bound i.e. \textit{assigned} a new value. There is further discussion in \nameref{subsec:bindingassign}.
+The process of associating a value with an identifier is called \textit{(name) binding}. A pair of a bound identifier and its value is called a \textit{binding}. An identifier can be re-bound i.e. \textit{assigned} a new value. There is further discussion in~\nameref{subsec:bindingassign}.
 
 \subsubsection{Constants}
 All constants are elementary forms. All numbers are constants. Built-in values such as the Booleans \texttt{true} and \texttt{false} are also constants. The result of evaluating a constant is simply that constant itself. For example, the value of \texttt{2.4} is 2.4.
@@ -197,7 +197,7 @@ Composition of forms is possible, which allows for more complex programs. A \tex
     \item The value of the composed form is the value of the function called with the arguments.
 \end{enumerate}
 
-However, this is not the complete description of composed forms. The function name can actually be any form which evaluates to a function. Thus, it is more appropriate to call it an expression than a name. This will be shown when discussing the \nameref{func} type.
+However, this is not the complete description of composed forms. The function name can actually be any form which evaluates to a function. Thus, it is more appropriate to call it an expression than a name. This will be shown when discussing the~\nameref{func} type.
 
 \subsection{Special Forms}
 The language has built-in functions that are available to the programmer. Some superficially appear to be like most functions, but are actually treated differently. These functions are known as \textit{special forms}. Special forms differ from regular functions in how they're evaluated or how they're defined. They can generally be categorised into one or more of the following:
@@ -222,7 +222,7 @@ As an example, given the LISP 1.5 program \texttt{MAX (1 2)}, the equivalent in 
 \lispy/ is statically typed. This means type safety (i.e. that there are no discrepancies between expected types of values and actual types of values) is verified at compile time by analysing the source code. The language has  a small set of types and a limited (but simple) type system. The language has type inference for everything except function parameters, meaning it can determine the type of a value at compile time without relying on being explicitly told the type by the programmer.
 
 \subsection{int and float}
-There are both integer and rational numbers. The former are \texttt{int}s and the latter are \texttt{float}s (a fixed-point representation). The syntax for them is a bit laxer than it is in LISP 1.5 (see \nameref{sec:syntax}). However, octal number literals are unsupported. There are also \texttt{float} constants for \texttt{inf} (floating-point positive infinity) and \texttt{nan} (``not a number'').
+There are both integer and rational numbers. The former are \texttt{int}s and the latter are \texttt{float}s (a fixed-point representation). The syntax for them is a bit laxer than it is in LISP 1.5 (see~\nameref{sec:syntax}). However, octal number literals are unsupported. There are also \texttt{float} constants for \texttt{inf} (floating-point positive infinity) and \texttt{nan} (``not a number'').
 
 The behaviour of precision and overflow is implementation-defined. For the reference implementation, these types are implemented using Python's \texttt{int} and \texttt{float} types, so they are subject to the same limitations in \lispy/ as they are in Python. That further depends on the Python interpreter used to run the compiled code.
 
@@ -231,7 +231,7 @@ The \texttt{bool} type is represented by the literal atoms \texttt{true} and \te
 
 % TODO: mention that recursion is possible.
 \subsection{func} \label{func}
-A \texttt{func} is a function as described in \nameref{subsubsec:simpleforms}. The fundamental way to create a function is with a special form know as a \textit{lambda expression}. The resulting function is called a \textit{lambda function}. The distinction from just \textit{function} is that a lambda function is not bound to any name. Thus, to evaluate a lambda function, a composed form has to be used. In fact, the use of a lambda expression in place of a function name is what was being alluded to briefly in the description of \nameref{subsec:composedforms}. As with function names, the lambda expression is evaluate first in the form, and then the arguments are evaluated.
+A \texttt{func} is a function as described in~\nameref{subsubsec:simpleforms}. The fundamental way to create a function is with a special form know as a \textit{lambda expression}. The resulting function is called a \textit{lambda function}. The distinction from just \textit{function} is that a lambda function is not bound to any name. Thus, to evaluate a lambda function, a composed form has to be used. In fact, the use of a lambda expression in place of a function name is what was being alluded to briefly in the description of~\nameref{subsec:composedforms}. As with function names, the lambda expression is evaluate first in the form, and then the arguments are evaluated.
 
 \begin{figure}[htp]
     \centering
@@ -404,7 +404,7 @@ The forms are evaluated left to right, from $e_1$ to $e_n$. The return value of 
 \section{Binding}\label{subsec:bindingassign}
 Recall that variables can be bound to values, and existing variables can be assigned new values. This section deals with how these operations are performed in the language.
 
-But first, clarification is needed on what constitutes a valid name for a binding. Generally, a valid name is any atomic literal. This means numbers and the Boolean constants \texttt{true} and \texttt{false} are not valid names. Special forms cannot be assigned new values. However, built-in function names (including special form names) can be used as names for new bindings. This results in \textit{shadowing}, a subject explained in \nameref{subsec:scope}.
+But first, clarification is needed on what constitutes a valid name for a binding. Generally, a valid name is any atomic literal. This means numbers and the Boolean constants \texttt{true} and \texttt{false} are not valid names. Special forms cannot be assigned new values. However, built-in function names (including special form names) can be used as names for new bindings. This results in \textit{shadowing}, a subject explained in~\nameref{subsec:scope}.
 
 \subsection{let}
 A way to bind variables was introduced with lambda expressions. However, as with the problem \texttt{progn} solves, writing lambdas for this becomes tedious. Instead, the special form \texttt{let} can be used to bind variables. It can be thought of as a more powerful version of \texttt{progn}.
