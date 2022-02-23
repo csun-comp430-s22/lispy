@@ -10,7 +10,7 @@ src_paths = ["lispyc"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --import-mode=importlib"
+addopts = "-ra -q --import-mode=importlib --cov -n auto"
 testpaths = ["tests"]
 
 [tool.coverage.paths]
@@ -34,8 +34,7 @@ fail_under = 80
 branch = true
 data_file = "${COVERAGE_DATAFILE-.coverage}"
 relative_files = false
-source_pkgs = ["lispyc"]
-source = ["tests"]
+source = ["lispyc", "tests"]
 
 [tool.setuptools_scm]
 version_scheme = "python-simplified-semver"
