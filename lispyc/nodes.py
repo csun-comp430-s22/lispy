@@ -28,7 +28,7 @@ class Atom(SExpression):
 
     value: str | int | float | bool
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> bool:  # pragma: no cover
         if isinstance(other, Atom):
             return self.value == other.value
         else:
@@ -45,7 +45,7 @@ class List(SExpression, ast_utils.AsList):
 
     elements: list[SExpression]
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> bool:  # pragma: no cover
         if isinstance(other, List):
             return self.elements == other.elements
         else:
@@ -62,7 +62,7 @@ class Program(Node, ast_utils.AsList):
 
     body: list[SExpression]
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> bool:  # pragma: no cover
         if isinstance(other, Program):
             return self.body == other.body
         else:
