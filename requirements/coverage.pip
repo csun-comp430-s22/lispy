@@ -4,5 +4,7 @@
 #
 #    make upgrade
 #
-coverage==6.3.2
+coverage[toml]==6.3.2
     # via -r requirements/coverage.in
+tomli==2.0.1
+    # via coverage

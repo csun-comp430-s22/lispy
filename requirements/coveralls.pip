@@ -8,7 +8,7 @@ certifi==2021.10.8
     # via requests
 charset-normalizer==2.0.12
     # via requests
-coverage==6.3.2
+coverage[toml]==6.3.2
     # via
     #   -c requirements\coverage.pip
     #   coveralls
@@ -20,5 +20,9 @@ idna==3.3
     # via requests
 requests==2.27.1
     # via coveralls
+tomli==2.0.1
+    # via
+    #   -c requirements\coverage.pip
+    #   coverage
 urllib3==1.26.8
     # via requests
