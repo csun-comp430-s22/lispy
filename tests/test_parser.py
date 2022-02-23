@@ -55,17 +55,20 @@ INVALID_ATOM_PARAMS = [
     "my-atom",
     "-atomname",
     "äöåü",
-    *[f"my{c}atom" for c in set(string.punctuation) - {"(", ")", "_"}],
+    *[f"my{c}atom" for c in set(string.punctuation) - {"(", ")", "_", "$"}],
 ]
 
 LIST_PARAMS = [
-    ("(+1)", [1]),
-    ("(-2.4)", [-2.4]),
-    ("(true)", [True]),
-    ("(-inf)", [float("-inf")]),
-    ("(false 12.3e2 -54 my_atom atom2 true)", [False, 12.3e2, -54, "my_atom", "atom2", True]),
-    ("(9e-2 true +2.3 atom -92 atom1)", [9e-2, True, +2.3, "atom", -92, "atom1"]),
-    ("()", []),
+    ("$($+1$)$", [1]),
+    ("$($-2.4$)$", [-2.4]),
+    ("$($true$)$", [True]),
+    ("$($-inf$)$", [float("-inf")]),
+    (
+        "$($false$ $12.3e2$ $-54$ $my_atom$ $atom2$ $true$)$",
+        [False, 12.3e2, -54, "my_atom", "atom2", True],
+    ),
+    ("$($9e-2$ $true$ $+2.3$ $atom$ $-92$ $atom1$)$", [9e-2, True, +2.3, "atom", -92, "atom1"]),
+    ("$($)$", []),
 ]
 
 PROGRAM_SIMPLE_PARAMS = [
@@ -118,6 +121,15 @@ def test_constant(program, value):
     assert ast == [value]
 
 
+@pytest.mark.parametrize(["program", "value"], CONSTANT_PARAMS)
+def test_constant_ws(program, value):
+    program = inject_random_ws(f"${program}$", "$")
+
+    ast = parser.parse(program)
+
+    assert ast == [value]
+
+
 @pytest.mark.parametrize("program", ["nan", "+nan", "-nan"])
 def test_nan(program):
     ast = parser.parse(program)
@@ -135,8 +147,25 @@ def test_atomic_literal(program):
     assert ast == [program]
 
 
-@pytest.mark.parametrize("program", INVALID_ATOM_PARAMS)
+@pytest.mark.parametrize("program", ATOMIC_LITERAL_PARAMS)
+def test_atomic_literal_ws(program):
+    program_in = inject_random_ws(f"${program}$", "$")
+
+    ast = parser.parse(program_in)
+
+    assert ast == [program]
+
+
+@pytest.mark.parametrize("program", INVALID_ATOM_PARAMS + ["my$atom"])
 def test_invalid_atom(program):
+    with pytest.raises(UnexpectedCharacters):
+        parser.parse(program)
+
+
+@pytest.mark.parametrize("program", INVALID_ATOM_PARAMS)
+def test_invalid_atom_ws(program):
+    program = inject_random_ws(f"${program}$", "$")
+
     with pytest.raises(UnexpectedCharacters):
         parser.parse(program)
 
@@ -149,6 +178,17 @@ def test_consecutive_atoms_require_whitespace(program):
 
 @pytest.mark.parametrize(["program", "value"], LIST_PARAMS)
 def test_list(program, value):
+    program = program.replace("$", "")
+
+    ast = parser.parse(program)
+
+    assert ast == [value]
+
+
+@pytest.mark.parametrize(["program", "value"], LIST_PARAMS)
+def test_list_ws(program, value):
+    program = inject_random_ws(program, "$")
+
     ast = parser.parse(program)
 
     assert ast == [value]
