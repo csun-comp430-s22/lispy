@@ -55,7 +55,7 @@ INVALID_ATOM_PARAMS = [
     "my-atom",
     "-atomname",
     "äöåü",
-    *[f"my{c}atom" for c in set(string.punctuation) - {"(", ")", "_", "$"}],
+    *[f"my{c}atom" for c in string.punctuation if c not in {"(", ")", "_", "$"}],
 ]
 
 LIST_PARAMS = [
