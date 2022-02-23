@@ -228,3 +228,10 @@ def test_program_ws(program, value):
     ast = parser.parse(program)
 
     assert ast == value
+
+
+@pytest.mark.parametrize("program", ["", inject_random_ws("$", "$")])
+def test_program_empty(program):
+    ast = parser.parse(program)
+
+    assert ast == []
