@@ -13,12 +13,27 @@ minversion = "7.0"
 addopts = "-ra -q --import-mode=importlib"
 testpaths = ["tests"]
 
+[tool.coverage.paths]
+lispyc = [
+    "lispyc",
+    "/home/*/work/lispy/lispy/lispyc",
+    "/Users/*/work/lispy/lispy/lispyc",
+    "D:\\*\\lispy\\lispy\\lispyc",
+]
+tests = [
+    "tests",
+    "/home/*/work/lispy/lispy/tests",
+    "/Users/*/work/lispy/lispy/tests",
+    "D:\\*\\lispy\\lispy\\tests"
+]
+
 [tool.coverage.report]
 fail_under = 80
 
 [tool.coverage.run]
 branch = true
 data_file = "${COVERAGE_DATAFILE-.coverage}"
+relative_files = false
 source_pkgs = ["lispyc"]
 source = ["tests"]
 
