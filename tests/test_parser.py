@@ -1,10 +1,13 @@
 import math
+import random
 import string
 
 import pytest
 from lark.exceptions import UnexpectedCharacters
 
 from lispyc import nodes, parser
+
+random.seed(1)
 
 CONSTANT_PARAMS = [
     ("true", True),
@@ -65,6 +68,30 @@ LIST_PARAMS = [
     ("()", []),
 ]
 
+PROGRAM_SIMPLE_PARAMS = [
+    ("$($)$1$($)$", [[], 1, []]),
+    ("$1$($)$1$", [1, [], 1]),
+    ("$1$($)$", [1, []]),
+    ("$($)$1$", [[], 1]),
+    ("$1$($)$($)$", [1, [], []]),
+    ("$($)$($)$1$", [[], [], 1]),
+    ("$1$ $1$($)$", [1, 1, []]),
+    ("$($)$1$ $1$", [[], 1, 1]),
+]
+
+
+def inject_random_ws(program: str, placeholder: str) -> str:
+    ws = " \t\f\r\n"
+
+    output = ""
+    for c in program:
+        if c == placeholder:
+            c = "".join(random.choices(ws, k=random.randint(2, 100)))
+
+        output += c
+
+    return output
+
 
 @pytest.mark.parametrize(["program", "value"], CONSTANT_PARAMS)
 def test_constant(program, value):
@@ -107,3 +134,21 @@ def test_list(program, value):
     ast = parser.parse(program)
 
     assert ast == [value]
+
+
+@pytest.mark.parametrize(["program", "value"], PROGRAM_SIMPLE_PARAMS)
+def test_program_simple(program, value):
+    program = program.replace("$", "")
+
+    ast = parser.parse(program)
+
+    assert ast == value
+
+
+@pytest.mark.parametrize(["program", "value"], PROGRAM_SIMPLE_PARAMS)
+def test_program_simple_ws(program, value):
+    program = inject_random_ws(program, "$")
+
+    ast = parser.parse(program)
+
+    assert ast == value
