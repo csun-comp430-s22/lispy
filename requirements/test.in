@@ -3,4 +3,5 @@
 
 pytest>=7.0.1
 pytest-cov>=3
+pytest-randomly>=3.10
 pytest-xdist>=2.5

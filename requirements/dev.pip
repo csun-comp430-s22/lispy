@@ -26,7 +26,7 @@ colorama==0.4.4
     #   -r requirements\test.pip
     #   click
     #   pytest
-coverage[toml]==6.3.1
+coverage[toml]==6.3.2
     # via
     #   -r requirements\test.pip
     #   pytest-cov
@@ -42,7 +42,7 @@ filelock==3.6.0
     # via
     #   -r requirements\lint.pip
     #   virtualenv
-identify==2.4.10
+identify==2.4.11
     # via
     #   -r requirements\lint.pip
     #   pre-commit
@@ -92,6 +92,7 @@ pytest==7.0.1
     #   -r requirements\test.pip
     #   pytest-cov
     #   pytest-forked
+    #   pytest-randomly
     #   pytest-xdist
 pytest-cov==3.0.0
     # via -r requirements\test.pip
@@ -99,6 +100,8 @@ pytest-forked==1.4.0
     # via
     #   -r requirements\test.pip
     #   pytest-xdist
+pytest-randomly==3.11.0
+    # via -r requirements\test.pip
 pytest-xdist==2.5.0
     # via -r requirements\test.pip
 pyyaml==6.0
