@@ -79,6 +79,24 @@ PROGRAM_SIMPLE_PARAMS = [
     ("$($)$1$ $1$", [[], 1, 1]),
 ]
 
+PROGRAM_PARAMS = [
+    (
+        "$($atom$ $-23$ $true$)$ $($2e-7$ $x$ $false$)$ $($)$ $($)$ $($x$)$",
+        [["atom", -23, True], [2e-7, "x", False], [], [], ["x"]],
+    ),
+    (
+        "$($+inf$ $11$)$ $9$ $true$ $($x1$ $y$ $.12$)$ $z23$ $($)$",
+        [[float("+inf"), 11], 9, True, ["x1", "y", 0.12], "z23", []],
+    ),
+    (
+        "$($list$ $1$ $2$)$($true$ $false$ $1$)$x$ $1$($y$ $a2b$)$($)$($)$1$ $a$",
+        [["list", 1, 2], [True, False, 1], "x", 1, ["y", "a2b"], [], [], 1, "a"],
+    ),
+    ("$z2a$ $2$($atom$ $7$ $a$)$", ["z2a", 2, ["atom", 7, "a"]]),
+    ("$($a$ $1$ $true$)$false$($-2e+1$ $3$)$", [["a", 1, True], False, [-2e1, 3]]),
+    ("$inf$($x$ $-1$)$false$", [float("inf"), ["x", -1], False]),
+]
+
 
 def inject_random_ws(program: str, placeholder: str) -> str:
     ws = " \t\f\r\n"
@@ -147,6 +165,24 @@ def test_program_simple(program, value):
 
 @pytest.mark.parametrize(["program", "value"], PROGRAM_SIMPLE_PARAMS)
 def test_program_simple_ws(program, value):
+    program = inject_random_ws(program, "$")
+
+    ast = parser.parse(program)
+
+    assert ast == value
+
+
+@pytest.mark.parametrize(["program", "value"], PROGRAM_PARAMS)
+def test_program(program, value):
+    program = program.replace("$", "")
+
+    ast = parser.parse(program)
+
+    assert ast == value
+
+
+@pytest.mark.parametrize(["program", "value"], PROGRAM_PARAMS)
+def test_program_ws(program, value):
     program = inject_random_ws(program, "$")
 
     ast = parser.parse(program)
