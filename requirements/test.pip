@@ -47,5 +47,6 @@ pytest-xdist==2.5.0
     # via -r requirements/test.in
 tomli==2.0.1
     # via
+    #   -c requirements\coverage.pip
     #   coverage
     #   pytest
