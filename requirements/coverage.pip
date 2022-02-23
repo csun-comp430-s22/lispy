@@ -4,5 +4,5 @@
 #
 #    make upgrade
 #
-coverage==6.3.1
+coverage==6.3.2
     # via -r requirements/coverage.in
