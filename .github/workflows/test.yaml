@@ -26,7 +26,10 @@ jobs:
           cache-dependency-path: requirements/test.pip
 
       - name: Install dependencies
-        run: pip install -r requirements/test.pip
+        run: |
+          set -eu
+          pip install -r requirements/test.pip
+          pip install -e .
 
       # Suffix the generated coverage datafile with the name of the runner's OS.
       - name: Run tests
