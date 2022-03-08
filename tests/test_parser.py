@@ -71,6 +71,19 @@ LIST_PARAMS = [
     ("$($)$", []),
 ]
 
+LIST_NESTED_PARAMS = [
+    ("$($a$($b $c$)$)$", [["a", ["b", "c"]]]),
+    ("$($($a $b$)$($1$)$2$)$($($)$)$", [[["a", "b"], [1], 2], [[]]]),
+    (
+        "$($($($bb$($($a$)$($x$)$c$($($)$)$$true$)$1)$f$)$1e12 $c$)"
+        "$($($9$($($1.2$)$($)$)$($d$)$($)$)$)$",
+        [
+            [[["bb", [["a"], ["x"], "c", [[]], True], 1], "f"], 1e12, "c"],
+            [[9, [[1.2], []], ["d"], []]],
+        ],
+    ),
+]
+
 PROGRAM_SIMPLE_PARAMS = [
     ("$($)$1$($)$", [[], 1, []]),
     ("$1$($)$1$", [1, [], 1]),
@@ -235,3 +248,21 @@ def test_program_empty(program):
     ast = parser.parse(program)
 
     assert ast == []
+
+
+@pytest.mark.parametrize(["program", "value"], LIST_NESTED_PARAMS)
+def test_nested_lists(program, value):
+    program = program.replace("$", "")
+
+    ast = parser.parse(program)
+
+    assert ast == value
+
+
+@pytest.mark.parametrize(["program", "value"], LIST_NESTED_PARAMS)
+def test_nested_lists_ws(program, value):
+    program = inject_random_ws(program, "$")
+
+    ast = parser.parse(program)
+
+    assert ast == value
