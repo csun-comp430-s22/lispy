@@ -3,7 +3,7 @@ import random
 import string
 
 import pytest
-from lark.exceptions import UnexpectedCharacters
+from lark.exceptions import UnexpectedCharacters, UnexpectedInput
 
 from lispyc import nodes, parser
 
@@ -111,6 +111,25 @@ PROGRAM_PARAMS = [
     ("$z2a$ $2$($atom$ $7$ $a$)$", ["z2a", 2, ["atom", 7, "a"]]),
     ("$($a$ $1$ $true$)$false$($-2e+1$ $3$)$", [["a", 1, True], False, [-2e1, 3]]),
     ("$inf$($x$ $-1$)$false$", [float("inf"), ["x", -1], False]),
+]
+
+MISSING_PAREN_PARAMS = [
+    "$($",
+    "$)$",
+    "$)$)$",
+    "$($($",
+    "$($)$($",
+    "$($)$)$",
+    "$($($)$",
+    "$)$($)$",
+    "$($($($($)$)$)$)$)$",
+    "$($($($($($($)$)$)$)$)$",
+    "$($)$($)$($($)$($)$",
+    "$($)$($)$)$($)$($)$",
+    "$($($)$)$($)$($",
+    "$($a$ $1$($c$($d$)$)$)$($e$)$)$",
+    "$a$)",
+    "$($a",
 ]
 
 
@@ -266,3 +285,19 @@ def test_nested_lists_ws(program, value):
     ast = parser.parse(program)
 
     assert ast == value
+
+
+@pytest.mark.parametrize("program", MISSING_PAREN_PARAMS)
+def test_missing_parenthesis(program):
+    program = program.replace("$", "")
+
+    with pytest.raises(UnexpectedInput):
+        parser.parse(program)
+
+
+@pytest.mark.parametrize("program", MISSING_PAREN_PARAMS)
+def test_missing_parenthesis_ws(program):
+    program = inject_random_ws(program, "$")
+
+    with pytest.raises(UnexpectedInput):
+        parser.parse(program)
