@@ -4,13 +4,13 @@ from . import types
 
 
 class Unifier:
-    """TODO."""
+    """Unification of types."""
 
     def __init__(self):
         self._map: dict[types.UnknownType, types.Type] = {}
 
     def unify(self, left: types.Type, right: types.Type) -> None:
-        """TODO."""
+        """Unify the `left` and `right` types."""
         left = self._get_set_representative(left)
         right = self._get_set_representative(right)
 
@@ -31,7 +31,7 @@ class Unifier:
                 raise ValueError("Unification failed: mismatched types.")
 
     def _unify_many(self, left: Iterable[types.Type], right: Iterable[types.Type]) -> None:
-        """TODO."""
+        """Unify pairs from `left` and `right`."""
         left_iter = iter(left)
         right_iter = iter(right)
 
