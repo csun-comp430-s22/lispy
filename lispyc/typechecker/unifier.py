@@ -2,6 +2,8 @@ from collections.abc import Iterable
 
 from . import types
 
+__all__ = ("Unifier",)
+
 
 class Unifier:
     """Unification of types."""
