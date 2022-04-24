@@ -10,7 +10,7 @@ src_paths = ["lispyc"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --import-mode=importlib --cov -n auto"
+addopts = "-ra -q --cov= --import-mode=importlib"
 testpaths = ["tests"]
 
 [tool.coverage.paths]
