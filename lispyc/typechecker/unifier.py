@@ -14,6 +14,22 @@ class Unifier:
         left = self._get_set_representative(left)
         right = self._get_set_representative(right)
 
+        if left is right:
+            return
+
+        match left, right:
+            case types.UnknownType(), _:
+                self._add_mapping(left, right)
+            case _, types.UnknownType():
+                self._add_mapping(right, left)
+            case types.ListType(), types.ListType():
+                self.unify(left.element_type, right.element_type)
+            case types.FunctionType(), types.FunctionType():
+                self.unify(left.return_type, right.return_type)
+                self._unify_many(left.parameter_types, right.parameter_types)
+            case _:
+                raise ValueError("Unification failed: mismatched types.")
+
     def _unify_many(self, left: Iterable[types.Type], right: Iterable[types.Type]) -> None:
         """TODO."""
         left_iter = iter(left)
