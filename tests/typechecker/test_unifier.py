@@ -192,3 +192,33 @@ def test_transitively_different_lists_fail(unifier, left, right):
 
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
         unifier.unify(list_2, list_unk)
+
+
+def test_transitively_different_function_params_fail(unifier):
+    param_1_unk = types.UnknownType()
+    param_2_unk = types.UnknownType()
+    func_1_unk = types.UnknownType()
+
+    func_1 = types.FunctionType((types.FloatType(), param_2_unk), types.BoolType())
+    func_2 = types.FunctionType((param_1_unk, types.IntType()), types.BoolType())
+
+    unifier.unify(param_1_unk, types.BoolType())
+    unifier.unify(param_2_unk, types.FloatType())
+    unifier.unify(func_1_unk, func_1)
+
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(func_1_unk, func_2)
+
+
+def test_transitively_different_function_returns_fail(unifier):
+    return_unk = types.UnknownType()
+    func_1_unk = types.UnknownType()
+
+    func_1 = types.FunctionType((types.FloatType(), types.IntType()), types.BoolType())
+    func_2 = types.FunctionType((types.FloatType(), types.IntType()), return_unk)
+
+    unifier.unify(return_unk, types.IntType())
+    unifier.unify(func_1_unk, func_1)
+
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(func_1_unk, func_2)
