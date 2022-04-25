@@ -26,6 +26,26 @@ DIFFERENT_FUNCTION_TYPES = [
     ),
 ]
 
+DIFFERENT_PARAM_COUNTS = [
+    (
+        types.FunctionType((), types.BoolType()),
+        types.FunctionType((types.BoolType(),), types.BoolType()),
+    ),
+    (
+        types.FunctionType((types.FloatType(), types.IntType()), types.BoolType()),
+        types.FunctionType((types.FloatType(),), types.BoolType()),
+    ),
+    (
+        types.FunctionType((types.BoolType(), types.IntType(), types.BoolType()), types.BoolType()),
+        types.FunctionType((types.IntType(),), types.BoolType()),
+    ),
+    (
+        # Different types too.
+        types.FunctionType((types.BoolType(), types.IntType()), types.FloatType()),
+        types.FunctionType((types.IntType(),), types.IntType()),
+    ),
+]
+
 
 @pytest.fixture
 def unifier():
@@ -129,5 +149,11 @@ def test_different_lists_fail(unifier, left, right):
 
 @pytest.mark.parametrize(["left", "right"], DIFFERENT_FUNCTION_TYPES)
 def test_different_function_types_fail(unifier, left, right):
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(left, right)
+
+
+@pytest.mark.parametrize(["left", "right"], DIFFERENT_PARAM_COUNTS)
+def test_different_param_counts_fail(unifier, left, right):
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
         unifier.unify(left, right)
