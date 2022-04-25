@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from itertools import zip_longest
 
 from . import types
 
@@ -34,14 +35,11 @@ class Unifier:
 
     def _unify_many(self, left: Iterable[types.Type], right: Iterable[types.Type]) -> None:
         """Unify pairs from `left` and `right`."""
-        left_iter = iter(left)
-        right_iter = iter(right)
-
-        for left_type, right_type in zip(left_iter, right_iter):
-            self.unify(left_type, right_type)
-
-        if next(left_iter, None) or next(right_iter, None):
-            raise ValueError("Unification failed: unequal number of types.")
+        for left_type, right_type in zip_longest(left, right):
+            if left_type is None or right_type is None:
+                raise ValueError("Unification failed: unequal number of types.")
+            else:
+                self.unify(left_type, right_type)
 
     def _add_mapping(self, source: types.UnknownType, dest: types.Type) -> None:
         """Map the unknown `source` type to `dest` type if it's not cyclic."""
