@@ -175,3 +175,20 @@ def test_transitively_different_basic_types_fail(unifier, left, right):
 
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
         unifier.unify(left_unk, right_unk)
+
+
+@pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
+def test_transitively_different_lists_fail(unifier, left, right):
+    element_1 = types.UnknownType()
+    element_2 = types.UnknownType()
+    list_unk = types.UnknownType()
+
+    list_1 = types.ListType(element_1)
+    list_2 = types.ListType(element_2)
+
+    unifier.unify(element_1, left())
+    unifier.unify(element_2, right())
+    unifier.unify(list_1, list_unk)
+
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(list_2, list_unk)
