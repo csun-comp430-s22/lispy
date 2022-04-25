@@ -99,6 +99,11 @@ def test_identical_functions_unify(unifier):
     assert len(unifier._map) == 0
 
 
+@pytest.mark.parametrize("type_", BASIC_TYPES)
+def test_transitively_identical_basic_types_unify(unifier, type_):
+    unifier.unify(type_(), type_())
+
+
 def test_transitively_identical_lists_unify(unifier):
     element_1 = types.UnknownType()
     element_2 = types.UnknownType()
