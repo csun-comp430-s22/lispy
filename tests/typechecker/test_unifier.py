@@ -53,3 +53,23 @@ def test_identical_functions_unify(unifier):
     unifier.unify(func_1, func_2)
 
     assert len(unifier._map) == 0
+
+
+def test_transitively_identical_functions_unify(unifier):
+    param_1_unk = types.UnknownType()
+    param_2_unk = types.UnknownType()
+    return_unk = types.UnknownType()
+    func_1_unk = types.UnknownType()
+
+    func_1 = types.FunctionType((types.FloatType(), param_2_unk), types.BoolType())
+    func_2 = types.FunctionType((param_1_unk, types.IntType()), return_unk)
+
+    unifier.unify(func_1_unk, func_1)
+    unifier.unify(func_1_unk, func_2)
+
+    expected_func = types.FunctionType((types.FloatType(), types.IntType()), types.BoolType())
+
+    assert expected_func == unifier._get_transitive_set_representative(func_1_unk)
+    assert types.FloatType() == unifier._get_transitive_set_representative(param_1_unk)
+    assert types.IntType() == unifier._get_transitive_set_representative(param_2_unk)
+    assert types.BoolType() == unifier._get_transitive_set_representative(return_unk)
