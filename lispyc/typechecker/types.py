@@ -1,6 +1,7 @@
 import abc
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 __all__ = ("Type", "UnknownType", "IntType", "FloatType", "BoolType", "ListType", "FunctionType")
 
@@ -14,6 +15,9 @@ class Type(metaclass=abc.ABCMeta):
 @dataclass(frozen=True, slots=True)
 class UnknownType(Type):
     """A type which is currently unknown; a placeholder."""
+
+    def __eq__(self, other: Any) -> bool:
+        return self is other
 
 
 @dataclass(frozen=True, slots=True)

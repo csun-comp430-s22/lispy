@@ -16,7 +16,7 @@ class Unifier:
         left = self._get_set_representative(left)
         right = self._get_set_representative(right)
 
-        if left is right:
+        if left == right:
             return
 
         match left, right:
