@@ -222,3 +222,27 @@ def test_transitively_different_function_returns_fail(unifier):
 
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
         unifier.unify(func_1_unk, func_2)
+
+
+def test_cyclic_list_fails(unifier):
+    unknown = types.UnknownType()
+    list_ = types.ListType(unknown)
+
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(unknown, list_)
+
+
+def test_cyclic_function_param_fails(unifier):
+    unknown = types.UnknownType()
+    func = types.FunctionType((unknown,), types.BoolType())
+
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(unknown, func)
+
+
+def test_cyclic_function_return_fails(unifier):
+    unknown = types.UnknownType()
+    func = types.FunctionType((types.BoolType(),), unknown)
+
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(unknown, func)
