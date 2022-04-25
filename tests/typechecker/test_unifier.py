@@ -55,6 +55,23 @@ def test_identical_functions_unify(unifier):
     assert len(unifier._map) == 0
 
 
+def test_transitively_identical_lists_unify(unifier):
+    element_1 = types.UnknownType()
+    element_2 = types.UnknownType()
+    list_unk = types.UnknownType()
+
+    list_1 = types.ListType(element_1)
+    list_2 = types.ListType(element_2)
+
+    unifier.unify(types.BoolType(), element_2)
+    unifier.unify(list_1, list_unk)
+    unifier.unify(list_2, list_unk)
+
+    assert types.ListType(types.BoolType()) == unifier._get_transitive_set_representative(list_unk)
+    assert types.BoolType() == unifier._get_transitive_set_representative(element_1)
+    assert types.BoolType() == unifier._get_transitive_set_representative(element_2)
+
+
 def test_transitively_identical_functions_unify(unifier):
     param_1_unk = types.UnknownType()
     param_2_unk = types.UnknownType()
