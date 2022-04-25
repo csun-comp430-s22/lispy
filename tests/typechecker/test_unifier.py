@@ -1,7 +1,30 @@
+from itertools import combinations
+
 import pytest
 
 from lispyc.typechecker import types
 from lispyc.typechecker.unifier import Unifier
+
+BASIC_TYPES = [types.IntType, types.FloatType, types.BoolType]
+
+DIFFERENT_FUNCTION_TYPES = [
+    (
+        types.FunctionType((types.FloatType(),), types.BoolType()),
+        types.FunctionType((types.IntType(),), types.BoolType()),
+    ),
+    (
+        types.FunctionType((types.FloatType(),), types.BoolType()),
+        types.FunctionType((types.FloatType(),), types.IntType()),
+    ),
+    (
+        types.FunctionType((types.IntType(),), types.BoolType()),
+        types.FunctionType((types.FloatType(),), types.IntType()),
+    ),
+    (
+        types.FunctionType((types.BoolType(), types.FloatType()), types.IntType()),
+        types.FunctionType((types.FloatType(), types.BoolType()), types.IntType()),
+    ),
+]
 
 
 @pytest.fixture
@@ -17,7 +40,7 @@ def test_identical_unknowns_unify(unifier):
     assert len(unifier._map) == 0
 
 
-@pytest.mark.parametrize("type_", [types.IntType, types.FloatType, types.BoolType])
+@pytest.mark.parametrize("type_", BASIC_TYPES)
 def test_identical_basic_types_unify(unifier, type_):
     unifier.unify(type_(), type_())
 
@@ -90,3 +113,21 @@ def test_transitively_identical_functions_unify(unifier):
     assert types.FloatType() == unifier._get_transitive_set_representative(param_1_unk)
     assert types.IntType() == unifier._get_transitive_set_representative(param_2_unk)
     assert types.BoolType() == unifier._get_transitive_set_representative(return_unk)
+
+
+@pytest.mark.parametrize(["left", "right"], list(combinations(BASIC_TYPES, r=2)))
+def test_different_basic_types_fail(unifier, left, right):
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(left(), right())
+
+
+@pytest.mark.parametrize(["left", "right"], list(combinations(BASIC_TYPES, r=2)))
+def test_different_lists_fail(unifier, left, right):
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(types.ListType(left()), types.ListType(right()))
+
+
+@pytest.mark.parametrize(["left", "right"], DIFFERENT_FUNCTION_TYPES)
+def test_different_function_types_fail(unifier, left, right):
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(left, right)
