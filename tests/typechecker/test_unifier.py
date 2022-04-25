@@ -6,6 +6,7 @@ from lispyc.typechecker import types
 from lispyc.typechecker.unifier import Unifier
 
 BASIC_TYPES = [types.IntType, types.FloatType, types.BoolType]
+BASIC_TYPE_PAIRS = list(combinations(BASIC_TYPES, r=2))
 
 DIFFERENT_FUNCTION_TYPES = [
     (
@@ -135,13 +136,13 @@ def test_transitively_identical_functions_unify(unifier):
     assert types.BoolType() == unifier._get_transitive_set_representative(return_unk)
 
 
-@pytest.mark.parametrize(["left", "right"], list(combinations(BASIC_TYPES, r=2)))
+@pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
 def test_different_basic_types_fail(unifier, left, right):
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
         unifier.unify(left(), right())
 
 
-@pytest.mark.parametrize(["left", "right"], list(combinations(BASIC_TYPES, r=2)))
+@pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
 def test_different_lists_fail(unifier, left, right):
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
         unifier.unify(types.ListType(left()), types.ListType(right()))
@@ -157,3 +158,15 @@ def test_different_function_types_fail(unifier, left, right):
 def test_different_param_counts_fail(unifier, left, right):
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
         unifier.unify(left, right)
+
+
+@pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
+def test_transitively_different_basic_types_fail(unifier, left, right):
+    left_unk = types.UnknownType()
+    right_unk = types.UnknownType()
+
+    unifier.unify(left_unk, left())
+    unifier.unify(right_unk, right())
+
+    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+        unifier.unify(left_unk, right_unk)
