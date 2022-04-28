@@ -1,13 +1,13 @@
 import lark
 from lark import Lark, ast_utils
 
-from lispyc import nodes
+from . import nodes
 
 __all__ = ("parse",)
 
 
 class AstTransformer(lark.Transformer):
-    """Transform a lispy parse tree (CST) into an AST."""
+    """Transform a lispy parse tree (CST) into an S-expression AST."""
 
     SIGNED_INT = int
     FLOAT = float
@@ -29,6 +29,6 @@ with open("resources/grammar.lark", "r", encoding="utf8") as _f:
 
 
 def parse(program: str) -> nodes.Program:
-    """Parse a lispy program into an AST."""
+    """Parse a lispy program into an S-expression AST."""
     tree = _parser.parse(program)
     return _transformer.transform(tree)
