@@ -48,3 +48,8 @@ class FunctionType(Type):
 
     parameter_types: Sequence[Type]
     return_type: Type
+
+
+@dataclass(frozen=True, slots=True)
+class TypeVarType(Type):
+    """A type variable type. Used for implementing generic special forms."""
