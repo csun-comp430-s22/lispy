@@ -1,7 +1,9 @@
 from collections.abc import Iterable
 from itertools import zip_longest
 
-from . import types
+from lispyc.nodes import types
+
+from .types import UnknownType
 
 __all__ = ("Unifier",)
 
@@ -10,7 +12,7 @@ class Unifier:
     """Unification of types."""
 
     def __init__(self):
-        self._map: dict[types.UnknownType, types.Type] = {}
+        self._map: dict[UnknownType, types.Type] = {}
 
     def unify(self, left: types.Type, right: types.Type) -> None:
         """Unify the `left` and `right` types."""
@@ -21,9 +23,9 @@ class Unifier:
             return
 
         match left, right:
-            case types.UnknownType(), _:
+            case UnknownType(), _:
                 self._add_mapping(left, right)
-            case _, types.UnknownType():
+            case _, UnknownType():
                 self._add_mapping(right, left)
             case types.ListType(), types.ListType():
                 self.unify(left.element_type, right.element_type)
@@ -41,7 +43,7 @@ class Unifier:
             else:
                 self.unify(left_type, right_type)
 
-    def _add_mapping(self, source: types.UnknownType, dest: types.Type) -> None:
+    def _add_mapping(self, source: UnknownType, dest: types.Type) -> None:
         """Map the unknown `source` type to `dest` type if it's not cyclic."""
         if self._has_unknown(dest, source):
             raise ValueError("Unification failed: attempt to create cyclic type")
@@ -69,10 +71,10 @@ class Unifier:
             case _:
                 return t
 
-    def _has_unknown(self, t: types.Type, unknown: types.UnknownType) -> bool:
+    def _has_unknown(self, t: types.Type, unknown: UnknownType) -> bool:
         """Return True if `t` is `unknown` or contains it."""
         match t := self._get_set_representative(t):
-            case types.UnknownType():
+            case UnknownType():
                 return t is unknown
             case types.ListType(element):
                 return element is unknown

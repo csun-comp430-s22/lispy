@@ -2,11 +2,19 @@ import abc
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-__all__ = ("Node", "Form", "ElementaryForm", "ComposedForm", "SpecialForm")
+from lispyc.typechecker.types import Type
+
+__all__ = ("Node", "TypeNode", "Form", "ElementaryForm", "ComposedForm", "SpecialForm")
 
 
 class Node(metaclass=abc.ABCMeta):
     """Base class for all nodes of an abstract syntax tree (AST)."""
+
+    __slots__ = ()
+
+
+class TypeNode(Type, Node, metaclass=abc.ABCMeta):
+    """Base class for nodes representing types."""
 
     __slots__ = ()
 

@@ -2,7 +2,8 @@ from itertools import combinations
 
 import pytest
 
-from lispyc.typechecker import types
+from lispyc.nodes import types
+from lispyc.typechecker.types import UnknownType
 from lispyc.typechecker.unifier import Unifier
 
 BASIC_TYPES = [types.IntType, types.FloatType, types.BoolType]
@@ -54,7 +55,7 @@ def unifier():
 
 
 def test_identical_unknowns_unify(unifier):
-    unknown = types.UnknownType()
+    unknown = UnknownType()
 
     unifier.unify(unknown, unknown)
 
@@ -69,8 +70,8 @@ def test_identical_basic_types_unify(unifier, type_):
 
 
 def test_unique_unknowns_unify(unifier):
-    unknown_1 = types.UnknownType()
-    unknown_2 = types.UnknownType()
+    unknown_1 = UnknownType()
+    unknown_2 = UnknownType()
 
     unifier.unify(unknown_1, unknown_2)
 
@@ -105,9 +106,9 @@ def test_transitively_identical_basic_types_unify(unifier, type_):
 
 
 def test_transitively_identical_lists_unify(unifier):
-    element_1 = types.UnknownType()
-    element_2 = types.UnknownType()
-    list_unk = types.UnknownType()
+    element_1 = UnknownType()
+    element_2 = UnknownType()
+    list_unk = UnknownType()
 
     list_1 = types.ListType(element_1)
     list_2 = types.ListType(element_2)
@@ -122,10 +123,10 @@ def test_transitively_identical_lists_unify(unifier):
 
 
 def test_transitively_identical_functions_unify(unifier):
-    param_1_unk = types.UnknownType()
-    param_2_unk = types.UnknownType()
-    return_unk = types.UnknownType()
-    func_1_unk = types.UnknownType()
+    param_1_unk = UnknownType()
+    param_2_unk = UnknownType()
+    return_unk = UnknownType()
+    func_1_unk = UnknownType()
 
     func_1 = types.FunctionType((types.FloatType(), param_2_unk), types.BoolType())
     func_2 = types.FunctionType((param_1_unk, types.IntType()), return_unk)
@@ -167,8 +168,8 @@ def test_different_param_counts_fail(unifier, left, right):
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
 def test_transitively_different_basic_types_fail(unifier, left, right):
-    left_unk = types.UnknownType()
-    right_unk = types.UnknownType()
+    left_unk = UnknownType()
+    right_unk = UnknownType()
 
     unifier.unify(left_unk, left())
     unifier.unify(right_unk, right())
@@ -179,9 +180,9 @@ def test_transitively_different_basic_types_fail(unifier, left, right):
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
 def test_transitively_different_lists_fail(unifier, left, right):
-    element_1 = types.UnknownType()
-    element_2 = types.UnknownType()
-    list_unk = types.UnknownType()
+    element_1 = UnknownType()
+    element_2 = UnknownType()
+    list_unk = UnknownType()
 
     list_1 = types.ListType(element_1)
     list_2 = types.ListType(element_2)
@@ -195,9 +196,9 @@ def test_transitively_different_lists_fail(unifier, left, right):
 
 
 def test_transitively_different_function_params_fail(unifier):
-    param_1_unk = types.UnknownType()
-    param_2_unk = types.UnknownType()
-    func_1_unk = types.UnknownType()
+    param_1_unk = UnknownType()
+    param_2_unk = UnknownType()
+    func_1_unk = UnknownType()
 
     func_1 = types.FunctionType((types.FloatType(), param_2_unk), types.BoolType())
     func_2 = types.FunctionType((param_1_unk, types.IntType()), types.BoolType())
@@ -211,8 +212,8 @@ def test_transitively_different_function_params_fail(unifier):
 
 
 def test_transitively_different_function_returns_fail(unifier):
-    return_unk = types.UnknownType()
-    func_1_unk = types.UnknownType()
+    return_unk = UnknownType()
+    func_1_unk = UnknownType()
 
     func_1 = types.FunctionType((types.FloatType(), types.IntType()), types.BoolType())
     func_2 = types.FunctionType((types.FloatType(), types.IntType()), return_unk)
@@ -225,7 +226,7 @@ def test_transitively_different_function_returns_fail(unifier):
 
 
 def test_cyclic_list_fails(unifier):
-    unknown = types.UnknownType()
+    unknown = UnknownType()
     list_ = types.ListType(unknown)
 
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
@@ -233,7 +234,7 @@ def test_cyclic_list_fails(unifier):
 
 
 def test_cyclic_function_param_fails(unifier):
-    unknown = types.UnknownType()
+    unknown = UnknownType()
     func = types.FunctionType((unknown,), types.BoolType())
 
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
@@ -241,7 +242,7 @@ def test_cyclic_function_param_fails(unifier):
 
 
 def test_cyclic_function_return_fails(unifier):
-    unknown = types.UnknownType()
+    unknown = UnknownType()
     func = types.FunctionType((types.BoolType(),), unknown)
 
     with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.

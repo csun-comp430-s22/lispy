@@ -1,11 +1,8 @@
 import abc
-from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from lispyc.nodes import Node
-
-__all__ = ("Type", "UnknownType", "IntType", "FloatType", "BoolType", "ListType", "FunctionType")
+__all__ = ("Type", "UnknownType", "TypeVarType")
 
 
 class Type(metaclass=abc.ABCMeta):
@@ -20,36 +17,6 @@ class UnknownType(Type):
 
     def __eq__(self, other: Any) -> bool:
         return self is other
-
-
-@dataclass(frozen=True, slots=True)
-class IntType(Type, Node):
-    """An integer type."""
-
-
-@dataclass(frozen=True, slots=True)
-class FloatType(Type, Node):
-    """A floating-point number type."""
-
-
-@dataclass(frozen=True, slots=True)
-class BoolType(Type, Node):
-    """A Boolean type (true or false)."""
-
-
-@dataclass(frozen=True, slots=True)
-class ListType(Type, Node):
-    """A generic list type."""
-
-    element_type: Type
-
-
-@dataclass(frozen=True, slots=True)
-class FunctionType(Type, Node):
-    """A function type."""
-
-    parameter_types: Sequence[Type]
-    return_type: Type
 
 
 @dataclass(frozen=True, slots=True)
