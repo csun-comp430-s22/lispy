@@ -9,15 +9,15 @@ from lispyc.utils import Abstract
 __all__ = ("Node", "SExpression", "Atom", "List", "Program")
 
 
-class Node(ast_utils.Ast, Abstract):
+@dataclass
+class Node(ast_utils.Ast, ast_utils.WithMeta, Abstract):
     """Base class for all nodes of an abstract syntax tree (AST)."""
 
-
-@dataclass
-class SExpression(Node, ast_utils.WithMeta, abstract=True):
-    """A symbolic expression. The fundamental syntactic element of lispy."""
-
     meta: lark.tree.Meta
+
+
+class SExpression(Node, abstract=True):
+    """A symbolic expression. The fundamental syntactic element of lispy."""
 
 
 @dataclass
