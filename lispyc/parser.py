@@ -5,15 +5,15 @@ from lispyc.sexpression.nodes import Atom, List, SExpression
 def _parse_type(type_: SExpression) -> nodes.TypeNode:
     """Parse an `SExpression` into a `TypeNode`."""
     match type_:
-        case Atom(value="int"):
+        case Atom("int"):
             return nodes.IntType()
-        case Atom(value="float"):
+        case Atom("float"):
             return nodes.FloatType()
-        case Atom(value="bool"):
+        case Atom("bool"):
             return nodes.BoolType()
-        case List(elements=[Atom(value="list"), list_type]):
+        case List([Atom("list"), list_type]):
             return nodes.ListType(_parse_type(list_type))
-        case List(elements=[Atom(value="func"), *param_types, return_type]):
+        case List([Atom("func"), *param_types, return_type]):
             parsed_params = []
             for param_type in param_types:
                 parsed_params.append(_parse_type(param_type))

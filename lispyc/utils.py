@@ -1,4 +1,4 @@
-__all__ = ("Abstract",)
+__all__ = ("Abstract", "MatchExclusionsMeta")
 
 
 class Abstract:
@@ -39,3 +39,41 @@ class Abstract:
             cls.__abstract = True
         else:
             cls.__abstract = False
+
+
+class MatchExclusionsMeta(type):
+    """Exclude arguments from `__match_args__`.
+
+    Exclusions can be specified by passing an iterable as the `exclude` keyword argument:
+
+    >>> @dataclasses.dataclass
+    >>> class Class(metaclass=MatchExclusionsMeta, exclude={"arg1"}):
+    >>>    arg1: int
+    >>>    arg2: int
+    >>>
+    >>> Class.__match_args__
+    >>> ("arg2",)
+
+    Subclasses inherit the exclusions, and can override them by explicitly specifying the kwarg.
+    """
+
+    def __new__(mcs, name, bases, ns, exclude=None, **kwargs):  # noqa: ANN001
+        """Create a new instance of `mcs` and store the given exclusions."""
+        cls = super().__new__(mcs, name, bases, ns, **kwargs)
+
+        # Only store it if it's explicitly set, which overrides the parent's value.
+        # Otherwise, it remains the same and can inherit the value from the parent.
+        if exclude is not None:
+            cls.__match_args_exclusions = frozenset(exclude)
+
+        return cls
+
+    def __getattribute__(cls, name: str):
+        value = super().__getattribute__(name)
+        if name == "__match_args__":
+            try:
+                value = tuple(arg for arg in value if arg not in cls.__match_args_exclusions)
+            except AttributeError:
+                pass  # No exclusions were set, but that's okay.
+
+        return value

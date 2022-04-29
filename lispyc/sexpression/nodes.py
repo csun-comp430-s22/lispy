@@ -4,13 +4,15 @@ from typing import Any
 import lark
 from lark import ast_utils
 
-from lispyc.utils import Abstract
+from lispyc.utils import Abstract, MatchExclusionsMeta
 
 __all__ = ("Node", "SExpression", "Atom", "List", "Program")
 
 
 @dataclass(frozen=True, slots=True)
-class Node(ast_utils.Ast, ast_utils.WithMeta, Abstract):
+class Node(
+    ast_utils.Ast, ast_utils.WithMeta, Abstract, metaclass=MatchExclusionsMeta, exclude={"meta"}
+):
     """Base class for all nodes of an abstract syntax tree (AST)."""
 
     meta: lark.tree.Meta
