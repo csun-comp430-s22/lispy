@@ -9,7 +9,7 @@ from lispyc.utils import Abstract
 __all__ = ("Node", "SExpression", "Atom", "List", "Program")
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Node(ast_utils.Ast, ast_utils.WithMeta, Abstract):
     """Base class for all nodes of an abstract syntax tree (AST)."""
 
@@ -19,8 +19,10 @@ class Node(ast_utils.Ast, ast_utils.WithMeta, Abstract):
 class SExpression(Node, abstract=True):
     """A symbolic expression. The fundamental syntactic element of lispy."""
 
+    __slots__ = ()
 
-@dataclass
+
+@dataclass(frozen=True, slots=True)
 class Atom(SExpression):
     """An atomic S-expression; an atomic literal or a constant.
 
@@ -37,7 +39,7 @@ class Atom(SExpression):
             return self.value == other
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class List(SExpression, ast_utils.AsList):
     """An S-expression list.
 
@@ -54,7 +56,7 @@ class List(SExpression, ast_utils.AsList):
             return self.elements == other
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Program(Node, ast_utils.AsList):
     """The top level of a lispy program.
 
