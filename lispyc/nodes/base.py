@@ -70,16 +70,17 @@ class ComposedForm(Form):
 class SpecialForm(Form, FromSExpressionMixin["SpecialForm"], metaclass=abc.ABCMeta):
     """Base class for special forms - built-in functions with special evaluation rules.
 
-    The `name` keyword argument is required. It is the name in lispy that is associated with the
+    The `id` keyword argument is required. It is the name in lispy that is associated with the
     special form.
     """
 
     __slots__ = ()
     __forms: dict[str, typing.Type[SpecialForm]] = {}
 
-    def __init_subclass__(cls, /, *, name: str, **kwargs):
+    def __init_subclass__(cls, /, *, id: str, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.__forms[name] = cls
+        # Cannot use "name" as the kwarg name. See https://github.com/python/cpython/issues/87993
+        cls.__forms[id] = cls
 
     @classmethod
     @property
