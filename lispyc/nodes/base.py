@@ -1,20 +1,44 @@
 from __future__ import annotations
 
+import abc
 import typing
 from collections.abc import Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
 
+from lispyc.sexpression.nodes import SExpression
 from lispyc.typechecker.types import Type
 from lispyc.utils import Abstract
 
-__all__ = ("Node", "TypeNode", "Form", "ElementaryForm", "ComposedForm", "SpecialForm", "Program")
+__all__ = (
+    "Node",
+    "FromSExpressionMixin",
+    "TypeNode",
+    "Form",
+    "ElementaryForm",
+    "ComposedForm",
+    "SpecialForm",
+    "Program",
+)
 
 
 class Node(Abstract):
     """Base class for all nodes of an abstract syntax tree (AST)."""
 
     __slots__ = ()
+
+
+T = typing.TypeVar("T", bound=Node)
+
+
+class FromSExpressionMixin(typing.Generic[T], metaclass=abc.ABCMeta):
+    """Abstract mixin with a classmethod that creates an instance from an `SExpression`."""
+
+    @classmethod
+    @abc.abstractmethod
+    def from_sexp(cls, sexp: SExpression) -> T:
+        """Parse an `SExpression` into a new `Node`."""
+        raise NotImplementedError
 
 
 class TypeNode(Type, Node, abstract=True):
@@ -43,7 +67,7 @@ class ComposedForm(Form):
     arguments: Sequence[Form]
 
 
-class SpecialForm(Form, abstract=True):
+class SpecialForm(Form, FromSExpressionMixin["SpecialForm"], metaclass=abc.ABCMeta):
     """Base class for special forms - built-in functions with special evaluation rules.
 
     The `name` keyword argument is required. It is the name in lispy that is associated with the
