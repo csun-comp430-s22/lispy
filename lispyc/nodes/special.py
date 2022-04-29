@@ -49,9 +49,10 @@ class FunctionParameter(Node, FromSExpressionMixin["FunctionParameter"]):
 
 
 @dataclass(frozen=True, slots=True)
-class Lambda(SpecialForm, id="lambda"):
+class Lambda(SpecialForm):
     """TODO."""
 
+    id = "lambda"
     parameters: Sequence[FunctionParameter]
     body: Form
 
@@ -69,9 +70,10 @@ class Lambda(SpecialForm, id="lambda"):
 
 
 @dataclass(frozen=True, slots=True)
-class Define(SpecialForm, id="define"):
+class Define(SpecialForm):
     """TODO."""
 
+    id = "define"
     name: Variable
     parameters: Sequence[FunctionParameter]
     body: Form
@@ -90,9 +92,10 @@ class Define(SpecialForm, id="define"):
 
 
 @dataclass(frozen=True, slots=True)
-class List(SpecialForm, id="list"):
+class List(SpecialForm):
     """TODO."""
 
+    id = "list"
     elements: Sequence[Form]
 
     @classmethod
@@ -109,9 +112,10 @@ class List(SpecialForm, id="list"):
 
 
 @dataclass(frozen=True, slots=True)
-class Cons(SpecialForm, id="cons"):
+class Cons(SpecialForm):
     """TODO."""
 
+    id = "cons"
     car: Form
     cdr: Form
 
@@ -128,9 +132,10 @@ class Cons(SpecialForm, id="cons"):
 
 
 @dataclass(frozen=True, slots=True)
-class Car(SpecialForm, id="car"):
+class Car(SpecialForm):
     """TODO."""
 
+    id = "car"
     list: Form
 
     @classmethod
@@ -142,9 +147,10 @@ class Car(SpecialForm, id="car"):
 
 
 @dataclass(frozen=True, slots=True)
-class Cdr(SpecialForm, id="cdr"):
+class Cdr(SpecialForm):
     """TODO."""
 
+    id = "cdr"
     list: Form
 
     @classmethod
@@ -156,9 +162,10 @@ class Cdr(SpecialForm, id="cdr"):
 
 
 @dataclass(frozen=True, slots=True)
-class Progn(SpecialForm, id="progn"):
+class Progn(SpecialForm):
     """TODO."""
 
+    id = "progn"
     forms: Sequence[Form]
 
     @classmethod
@@ -175,9 +182,10 @@ class Progn(SpecialForm, id="progn"):
 
 
 @dataclass(frozen=True, slots=True)
-class Set(SpecialForm, id="set"):
+class Set(SpecialForm):
     """TODO."""
 
+    id = "set"
     name: Variable
     value: Form
 
@@ -213,9 +221,10 @@ class LetBinding(Node, FromSExpressionMixin["LetBinding"]):
 
 
 @dataclass(frozen=True, slots=True)
-class Let(SpecialForm, id="let"):
+class Let(SpecialForm):
     """TODO."""
 
+    id = "let"
     bindings: Sequence[LetBinding]
     body: Sequence[Form]
 
@@ -253,9 +262,10 @@ class Branch(Node, FromSExpressionMixin["Branch"]):
 
 
 @dataclass(frozen=True, slots=True)
-class Cond(SpecialForm, id="cond"):
+class Cond(SpecialForm):
     """TODO."""
 
+    id = "cond"
     branches: Sequence[Branch]
     default: Form
 
@@ -273,9 +283,10 @@ class Cond(SpecialForm, id="cond"):
 
 
 @dataclass(frozen=True, slots=True)
-class Select(SpecialForm, id="select"):
+class Select(SpecialForm):
     """TODO."""
 
+    id = "select"
     value: Form
     branches: Sequence[Branch]
     default: Form

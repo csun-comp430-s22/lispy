@@ -74,13 +74,17 @@ class SpecialForm(Form, FromSExpressionMixin["SpecialForm"], metaclass=abc.ABCMe
     special form.
     """
 
-    __slots__ = ()
-    __forms: dict[str, typing.Type[SpecialForm]] = {}
+    __forms: typing.ClassVar[dict[str, typing.Type[SpecialForm]]] = {}
+    id: typing.ClassVar[str | None] = None
 
-    def __init_subclass__(cls, /, *, id: str, **kwargs):
+    def __init_subclass__(cls, /, **kwargs):
         super().__init_subclass__(**kwargs)
-        # Cannot use "name" as the kwarg name. See https://github.com/python/cpython/issues/87993
-        cls.__forms[id] = cls
+
+        if cls.id is None:
+            # TODO: allow it to be None if subclass is abstract?
+            raise ValueError(f"'id' must be set on subclasses of {SpecialForm.__name__}.")
+
+        cls.__forms[cls.id] = cls
 
     @classmethod
     @property
