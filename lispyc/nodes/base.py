@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from lispyc.typechecker.types import Type
 
-__all__ = ("Node", "TypeNode", "Form", "ElementaryForm", "ComposedForm", "SpecialForm")
+__all__ = ("Node", "TypeNode", "Form", "ElementaryForm", "ComposedForm", "SpecialForm", "Program")
 
 
 class Node(metaclass=abc.ABCMeta):
@@ -43,3 +43,10 @@ class SpecialForm(Form, metaclass=abc.ABCMeta):
     """Base class for special forms - built-in functions with special evaluation rules."""
 
     __slots__ = ()
+
+
+@dataclass(frozen=True, slots=True)
+class Program(Node):
+    """Top level of a lispy program."""
+
+    body: Sequence[Form]
