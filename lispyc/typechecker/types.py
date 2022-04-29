@@ -1,11 +1,12 @@
-import abc
 from dataclasses import dataclass
 from typing import Any
+
+from lispyc.utils import Abstract
 
 __all__ = ("Type", "UnknownType", "TypeVarType")
 
 
-class Type(metaclass=abc.ABCMeta):
+class Type(Abstract):
     """Base class for types that can participate in unification."""
 
     __slots__ = ()
