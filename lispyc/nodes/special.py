@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from lispyc.typechecker import types
 
-from .base import Form, Node
+from .base import Form, Node, SpecialForm
 from .elementary import Variable
 
 __all__ = (
@@ -33,7 +33,7 @@ class FunctionParameter(Node):
 
 
 @dataclass(frozen=True, slots=True)
-class Lambda(Form):
+class Lambda(SpecialForm, name="lambda"):
     """TODO."""
 
     parameters: Sequence[FunctionParameter]
@@ -41,7 +41,7 @@ class Lambda(Form):
 
 
 @dataclass(frozen=True, slots=True)
-class Define(Form):
+class Define(SpecialForm, name="define"):
     """TODO."""
 
     name: Variable
@@ -50,14 +50,14 @@ class Define(Form):
 
 
 @dataclass(frozen=True, slots=True)
-class List(Form):
+class List(SpecialForm, name="list"):
     """TODO."""
 
     elements: Sequence[Form]
 
 
 @dataclass(frozen=True, slots=True)
-class Cons(Form):
+class Cons(SpecialForm, name="cons"):
     """TODO."""
 
     car: Form
@@ -65,28 +65,28 @@ class Cons(Form):
 
 
 @dataclass(frozen=True, slots=True)
-class Car(Form):
+class Car(SpecialForm, name="car"):
     """TODO."""
 
     list: Form
 
 
 @dataclass(frozen=True, slots=True)
-class Cdr(Form):
+class Cdr(SpecialForm, name="cdr"):
     """TODO."""
 
     list: Form
 
 
 @dataclass(frozen=True, slots=True)
-class Progn(Form):
+class Progn(SpecialForm, name="progn"):
     """TODO."""
 
     forms: Sequence[Form]
 
 
 @dataclass(frozen=True, slots=True)
-class Set(Form):
+class Set(SpecialForm, name="set"):
     """TODO."""
 
     name: Variable
@@ -102,7 +102,7 @@ class LetBinding(Node):
 
 
 @dataclass(frozen=True, slots=True)
-class Let(Form):
+class Let(SpecialForm, name="let"):
     """TODO."""
 
     name: Variable
@@ -119,7 +119,7 @@ class Branch(Node):
 
 
 @dataclass(frozen=True, slots=True)
-class Cond(Form):
+class Cond(SpecialForm, name="cond"):
     """TODO."""
 
     branches: Sequence[Branch]
@@ -127,7 +127,7 @@ class Cond(Form):
 
 
 @dataclass(frozen=True, slots=True)
-class Select(Form):
+class Select(SpecialForm, name="select"):
     """TODO."""
 
     value: Form

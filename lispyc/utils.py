@@ -28,7 +28,7 @@ class Abstract:
 
         return super().__new__(cls)
 
-    def __init_subclass__(cls, abstract: bool | None = None, **kwargs):
+    def __init_subclass__(cls, /, *, abstract: bool | None = None, **kwargs):
         super().__init_subclass__(**kwargs)
 
         if abstract is not None:

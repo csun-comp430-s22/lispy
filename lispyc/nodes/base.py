@@ -1,5 +1,9 @@
+from __future__ import annotations
+
+import typing
 from collections.abc import Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from lispyc.typechecker.types import Type
 from lispyc.utils import Abstract
@@ -40,9 +44,24 @@ class ComposedForm(Form):
 
 
 class SpecialForm(Form, abstract=True):
-    """Base class for special forms - built-in functions with special evaluation rules."""
+    """Base class for special forms - built-in functions with special evaluation rules.
+
+    The `name` keyword argument is required. It is the name in lispy that is associated with the
+    special form.
+    """
 
     __slots__ = ()
+    __forms: dict[str, typing.Type[SpecialForm]] = {}
+
+    def __init_subclass__(cls, /, *, name: str, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.__forms[name] = cls
+
+    @classmethod
+    @property
+    def forms_map(cls) -> MappingProxyType[str, typing.Type[SpecialForm]]:
+        """A mapping of registered names to special forms."""
+        return MappingProxyType(cls.__forms)
 
 
 @dataclass(frozen=True, slots=True)
