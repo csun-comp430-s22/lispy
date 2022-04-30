@@ -49,9 +49,24 @@ LAMBDA_PARAMS = [
     ),
 ]
 
+INVALID_LAMBDA_PARAMS = [
+    "(lambda)",  # Missing params and body.
+    "(lambda ())",  # Missing params or body.
+    "(lambda ((x int) (y str)))",  # Missing body.
+    "(lambda (x 1 2))",  # Missing params.
+    "(lambda (x int) ())",  # Param not nested.
+    "(lambda (()) ())",  # Empty param.
+]
+
 
 @pytest.mark.parametrize(["program", "params", "body"], LAMBDA_PARAMS)
 def test_lambda_parses(program, params, body):
     result = parse(program)
 
     assert result == Program((nodes.Lambda(params, body),))
+
+
+@pytest.mark.parametrize("program", INVALID_LAMBDA_PARAMS)
+def test_invalid_lambda_fails(program):
+    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+        parse(program)
