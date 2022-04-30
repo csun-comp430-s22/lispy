@@ -24,6 +24,8 @@ def parse_form(form: SExpression) -> nodes.Form:
             name = parse_form(name)
             arguments = tuple(map(parse_form, forms))
             return nodes.ComposedForm(name, arguments)
+        case List([]):
+            return nodes.List([])  # nil
         case _:
             raise ValueError(f"Unknown form for S-expression {form}.")
 
