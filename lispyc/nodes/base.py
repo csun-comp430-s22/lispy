@@ -8,7 +8,7 @@ from types import MappingProxyType
 
 from lispyc.sexpression.nodes import SExpression
 from lispyc.typechecker.types import Type
-from lispyc.utils import Abstract
+from lispyc.utils import Abstract, is_redefined_dataclass_with_slots
 
 __all__ = (
     "Node",
@@ -70,8 +70,8 @@ class ComposedForm(Form):
 class SpecialForm(Form, FromSExpressionMixin["SpecialForm"], metaclass=abc.ABCMeta):
     """Base class for special forms - built-in functions with special evaluation rules.
 
-    The `id` keyword argument is required. It is the name in lispy that is associated with the
-    special form.
+    The `id` class attribute is required to be set on subclasses. It is the name in lispy that is
+    associated with the special form.
     """
 
     __forms: typing.ClassVar[dict[str, typing.Type[SpecialForm]]] = {}
@@ -82,7 +82,16 @@ class SpecialForm(Form, FromSExpressionMixin["SpecialForm"], metaclass=abc.ABCMe
 
         if cls.id is None:
             # TODO: allow it to be None if subclass is abstract?
-            raise ValueError(f"'id' must be set on subclasses of {SpecialForm.__name__}.")
+            raise ValueError(
+                f"The 'id' class attribute must be set on subclasses of {SpecialForm.__name__}."
+            )
+
+        if cls.id in cls.__forms and not is_redefined_dataclass_with_slots(
+            cls.__forms[cls.id], cls
+        ):
+            raise ValueError(
+                f"A {SpecialForm.__name__} subclass with id {cls.id!r} is already defined."
+            )
 
         cls.__forms[cls.id] = cls
 

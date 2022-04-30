@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import inspect
 import typing
 
-__all__ = ("Abstract", "HashableSequence")
+__all__ = ("Abstract", "HashableSequence", "is_redefined_dataclass_with_slots")
 
 
 class Abstract:
@@ -81,3 +82,23 @@ class HashableSequence(typing.Protocol[T]):  # pragma: no cover
 
     def count(self, value: typing.Any, /) -> int:  # noqa: D102
         ...
+
+
+def is_redefined_dataclass_with_slots(old: type, new: type) -> bool:
+    """Return True if `new` is the `old` dataclass redefined with `__slots__."""
+    # Must both be dataclasses.
+    if "__dataclass_fields__" not in old.__dict__ or "__dataclass_fields__" not in new.__dict__:
+        return False
+
+    # Old class must not have __slots__.
+    # New class must have __slots__ since that would be the purpose for recreating the class.
+    # __slots__ must be checked directly on the class, ignoring any inherited __slots__.
+    if "__slots__" in old.__dict__ or "__slots__" not in new.__dict__:
+        return False
+
+    # This doesn't definitively indicate it's the same class, but it's good enough.
+    return (
+        inspect.getmodule(old) == inspect.getmodule(new)
+        and old.__name__ == new.__name__
+        and old.__bases__ == new.__bases__
+    )
