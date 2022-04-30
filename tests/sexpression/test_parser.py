@@ -5,7 +5,7 @@ import string
 import pytest
 from lark.exceptions import UnexpectedCharacters, UnexpectedInput
 
-from sexpression import nodes, parser
+from lispyc.sexpression import nodes, parser
 
 random.seed(1)
 
