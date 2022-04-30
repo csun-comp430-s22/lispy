@@ -15,7 +15,7 @@ def parse_form(form: SExpression) -> nodes.Form:
             return nodes.SpecialForm.forms_map[name].from_sexp(form)
         case List([name, *forms]):
             name = parse_form(name)
-            arguments = tuple(map(parse_form, forms))  # Must be hashable.
+            arguments = tuple(map(parse_form, forms))
             return nodes.ComposedForm(name, arguments)
         case _:
             raise ValueError(f"Unknown form for S-expression {form}.")
@@ -34,7 +34,7 @@ def parse_type(type_: SExpression) -> nodes.TypeNode:
             return nodes.ListType(parse_type(list_type))
         case List([Atom("func"), *param_types, return_type]):
             return_type = parse_type(return_type)
-            param_types = tuple(map(parse_type, param_types))  # Must be hashable.
+            param_types = tuple(map(parse_type, param_types))
             return nodes.FunctionType(param_types, return_type)
         case _:
             raise ValueError("Unknown type or invalid format for type.")

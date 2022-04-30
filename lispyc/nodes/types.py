@@ -1,7 +1,7 @@
-from collections.abc import Sequence
 from dataclasses import dataclass
 
 from lispyc.typechecker.types import Type
+from lispyc.utils import HashableSequence
 
 from .base import TypeNode
 
@@ -34,5 +34,5 @@ class ListType(TypeNode):
 class FunctionType(TypeNode):
     """A function type."""
 
-    parameter_types: Sequence[Type]
+    parameter_types: HashableSequence[Type]
     return_type: Type

@@ -63,7 +63,7 @@ class Lambda(SpecialForm):
 
         match sexp:
             case ListNode([ListNode(params), body]):
-                params = tuple(map(FunctionParameter.from_sexp, params))  # Must be hashable.
+                params = tuple(map(FunctionParameter.from_sexp, params))
                 return cls(params, parse_form(body))
             case _:
                 raise ValueError("Invalid S-expression for special form.")
@@ -85,7 +85,7 @@ class Define(SpecialForm):
 
         match sexp:
             case ListNode([Atom(str() as name), ListNode(params), body]):
-                params = tuple(map(FunctionParameter.from_sexp, params))  # Must be hashable.
+                params = tuple(map(FunctionParameter.from_sexp, params))
                 return cls(Variable(name), params, parse_form(body))
             case _:
                 raise ValueError("Invalid S-expression for special form.")
@@ -105,7 +105,7 @@ class List(SpecialForm):
 
         match sexp:
             case ListNode(elements):
-                elements = tuple(map(parse_form, elements))  # Must be hashable.
+                elements = tuple(map(parse_form, elements))
                 return cls(elements)
             case _:
                 raise ValueError("Invalid S-expression for special form.")
@@ -175,7 +175,7 @@ class Progn(SpecialForm):
 
         match sexp:
             case ListNode(forms):
-                forms = tuple(map(parse_form, forms))  # Must be hashable.
+                forms = tuple(map(parse_form, forms))
                 return cls(forms)
             case _:
                 raise ValueError("Invalid S-expression for special form.")
@@ -235,8 +235,8 @@ class Let(SpecialForm):
 
         match sexp:
             case ListNode([ListNode(bindings), ListNode(body)]):
-                bindings = tuple(map(LetBinding.from_sexp, bindings))  # Must be hashable.
-                body = tuple(map(parse_form, body))  # Must be hashable.
+                bindings = tuple(map(LetBinding.from_sexp, bindings))
+                body = tuple(map(parse_form, body))
                 return cls(bindings, body)
             case _:
                 raise ValueError("Invalid S-expression for special form.")
@@ -276,7 +276,7 @@ class Cond(SpecialForm):
 
         match sexp:
             case ListNode([ListNode(branches), default]):
-                branches = tuple(map(Branch.from_sexp, branches))  # Must be hashable.
+                branches = tuple(map(Branch.from_sexp, branches))
                 return cls(branches, parse_form(default))
             case _:
                 raise ValueError("Invalid S-expression for special form.")
@@ -298,7 +298,7 @@ class Select(SpecialForm):
 
         match sexp:
             case ListNode([value, ListNode(branches), default]):
-                branches = tuple(map(Branch.from_sexp, branches))  # Must be hashable.
+                branches = tuple(map(Branch.from_sexp, branches))
                 return cls(parse_form(value), branches, parse_form(default))
             case _:
                 raise ValueError("Invalid S-expression for special form.")
