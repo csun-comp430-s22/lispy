@@ -20,8 +20,39 @@ VALID_LISTS = [
 ]
 
 
+VALID_CONS = [
+    ("(cons a b)", Variable("a"), Variable("b")),
+    (
+        "(cons (list a) (list b c))",
+        nodes.List((Variable("a"),)),
+        nodes.List((Variable("b"), Variable("c"))),
+    ),
+    ("(cons (x 1) true)", ComposedForm(Variable("x"), (Constant(1),)), Constant(True)),
+]
+
+INVALID_CONS = [
+    "(cons)",
+    "(cons a)",
+    "(cons a b c)",
+    "(cons 1 2 a b c d true 17e-1)",
+]
+
+
 @pytest.mark.parametrize(["program", "elements"], VALID_LISTS)
 def test_list_parses(program, elements):
     result = parse(program)
 
     assert result == Program((nodes.List(elements),))
+
+
+@pytest.mark.parametrize(["program", "car", "cdr"], VALID_CONS)
+def test_cons_parses(program, car, cdr):
+    result = parse(program)
+
+    assert result == Program((nodes.Cons(car, cdr),))
+
+
+@pytest.mark.parametrize("program", INVALID_CONS)
+def test_invalid_cons_fails(program):
+    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+        parse(program)
