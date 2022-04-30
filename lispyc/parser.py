@@ -9,7 +9,7 @@ def parse_form(form: SExpression) -> nodes.Form:
     match form:
         case Atom(str() as value):
             return nodes.Variable(value)
-        case Atom(value):
+        case Atom(int() | float() | bool() as value):
             return nodes.Constant(value)
         case List([Atom(str() as name), *_]) if name in nodes.SpecialForm.forms_map:
             return nodes.SpecialForm.forms_map[name].from_sexp(form)

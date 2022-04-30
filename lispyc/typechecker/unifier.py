@@ -23,13 +23,13 @@ class Unifier:
             return
 
         match left, right:
-            case UnknownType(), _:
+            case UnknownType() as left, _:
                 self._add_mapping(left, right)
-            case _, UnknownType():
+            case _, UnknownType() as right:
                 self._add_mapping(right, left)
-            case types.ListType(), types.ListType():
+            case types.ListType() as left, types.ListType() as right:
                 self.unify(left.element_type, right.element_type)
-            case types.FunctionType(), types.FunctionType():
+            case types.FunctionType() as left, types.FunctionType() as right:
                 self.unify(left.return_type, right.return_type)
                 self._unify_many(left.parameter_types, right.parameter_types)
             case _:
@@ -53,7 +53,7 @@ class Unifier:
     def _get_set_representative(self, t: types.Type) -> types.Type:
         """Return the set representative type for `t`."""
         # Assume all keys are of UnknownType as denoted by the map's type annotation.
-        while next_type := self._map.get(t):
+        while next_type := self._map.get(t):  # type: ignore
             t = next_type
 
         return t

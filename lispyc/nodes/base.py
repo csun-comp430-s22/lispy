@@ -77,7 +77,7 @@ class SpecialForm(Form, FromSExpressionMixin["SpecialForm"], metaclass=abc.ABCMe
     __forms: typing.ClassVar[dict[str, typing.Type[SpecialForm]]] = {}
     id: typing.ClassVar[str | None] = None
 
-    def __init_subclass__(cls, /, **kwargs):
+    def __init_subclass__(cls, /, **kwargs: typing.Any):
         super().__init_subclass__(**kwargs)
 
         if cls.id is None:

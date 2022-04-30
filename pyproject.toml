@@ -8,6 +8,16 @@ profile = "black"
 skip_gitignore = true
 src_paths = ["lispyc"]
 
+[tool.pyright]
+include = ["lispyc"]
+
+pythonPlatform = "All"
+typeCheckingMode = "strict"
+useLibraryCodeForTypes = true
+
+reportImportCycles = "warning"
+reportPrivateImportUsage = "warning"
+
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --cov= --import-mode=importlib"
