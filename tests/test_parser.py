@@ -13,7 +13,7 @@ CONSTANTS = [
 ]
 
 
-@pytest.mark.parametrize("program", ["x", "y1", "z_A", "C"])
+@pytest.mark.parametrize("program", ["x", "y1", "z_A", "C", "nil", "not", "float"])
 def test_variable_parses(program):
     result = parse(program)
 
