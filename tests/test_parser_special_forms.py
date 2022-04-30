@@ -58,6 +58,20 @@ INVALID_LAMBDA_PARAMS = [
     "(lambda (()) ())",  # Empty param.
 ]
 
+INVALID_LAMBDA_PARAM_TYPES_PARAMS = [
+    "(lambda ((list 1)) ())",
+    "(lambda ((list list)) ())",
+    "(lambda ((func false)) ())",
+    "(lambda ((func list)) ())",
+    "(lambda ((name (list 123))) ())",
+    "(lambda ((name (list list))) ())",
+    "(lambda ((name (list))) ())",
+    "(lambda ((name (func list))) ())",
+    "(lambda ((name (func () ()))) ())",
+    "(lambda ((name (func (a b) 1.4))) ())",
+    "(lambda ((name (func ((x int) (b float)) bool))) ())",
+]
+
 
 @pytest.mark.parametrize(["program", "params", "body"], LAMBDA_PARAMS)
 def test_lambda_parses(program, params, body):
@@ -69,4 +83,10 @@ def test_lambda_parses(program, params, body):
 @pytest.mark.parametrize("program", INVALID_LAMBDA_PARAMS)
 def test_invalid_lambda_fails(program):
     with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+        parse(program)
+
+
+@pytest.mark.parametrize("program", INVALID_LAMBDA_PARAM_TYPES_PARAMS)
+def test_invalid_lambda_param_types_fails(program):
+    with pytest.raises(ValueError, match="Unknown type"):
         parse(program)
