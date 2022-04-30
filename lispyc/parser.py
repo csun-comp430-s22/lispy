@@ -47,7 +47,7 @@ def parse_type(type_: SExpression) -> nodes.TypeNode:
             return nodes.BoolType()
         case List([Atom("list"), list_type]):
             return nodes.ListType(parse_type(list_type))
-        case List([Atom("func"), *param_types, return_type]):
+        case List([Atom("func"), List(param_types), return_type]):
             return_type = parse_type(return_type)
             param_types = tuple(map(parse_type, param_types))
             return nodes.FunctionType(param_types, return_type)
