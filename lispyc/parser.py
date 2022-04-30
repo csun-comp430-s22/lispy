@@ -1,7 +1,14 @@
 from lispyc import nodes
-from lispyc.sexpression.nodes import Atom, List, SExpression
+from lispyc.sexpression import parser
+from lispyc.sexpression.nodes import Atom, List, Program, SExpression
 
-__all__ = ("parse_form", "parse_type")
+__all__ = ("parse", "parse_form", "parse_program", "parse_type")
+
+
+def parse(program: str) -> nodes.Program:
+    """Parse a lispy program into an AST."""
+    program_node = parser.parse(program)
+    return parse_program(program_node)
 
 
 def parse_form(form: SExpression) -> nodes.Form:
@@ -19,6 +26,12 @@ def parse_form(form: SExpression) -> nodes.Form:
             return nodes.ComposedForm(name, arguments)
         case _:
             raise ValueError(f"Unknown form for S-expression {form}.")
+
+
+def parse_program(program: Program) -> nodes.Program:
+    """Parse the `SExpression`s in a `Program` into `Form`s."""
+    body = tuple(map(parse_form, program.body))
+    return nodes.Program(body)
 
 
 def parse_type(type_: SExpression) -> nodes.TypeNode:
