@@ -19,7 +19,6 @@ VALID_VAR_ARGS = [
     ),
 ]
 
-
 VALID_2_ARGS = [
     ("($ a b)", Variable("a"), Variable("b")),
     (
@@ -58,6 +57,14 @@ INVALID_1_ARG = [
     "($ ($ y) (y 4))",
 ]
 
+VALID_GE_2_ARGS = [
+    VALID_VAR_ARGS[1],
+    VALID_VAR_ARGS[3],
+    *[(program, (arg1, arg2)) for program, arg1, arg2 in VALID_2_ARGS],
+]
+
+INVALID_GE_2_ARGS = [p for p, _ in VALID_1_ARG] + ["($)", "($ ($ x))", "($ ($ x y))"]
+
 
 @pytest.mark.parametrize("node", [nodes.List])
 @pytest.mark.parametrize(["program", "args"], VALID_VAR_ARGS)
@@ -93,5 +100,20 @@ def test_1_arg_parses(program, arg, node):
 @pytest.mark.parametrize("node", [nodes.Car, nodes.Cdr])
 @pytest.mark.parametrize("program", INVALID_1_ARG)
 def test_invalid_1_arg_fails(program, node):
+    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+        parse(program.replace("$", node.id))
+
+
+@pytest.mark.parametrize("node", [nodes.Progn])
+@pytest.mark.parametrize(["program", "args"], VALID_GE_2_ARGS)
+def test_ge_2_args_parses(program, args, node):
+    result = parse(program.replace("$", node.id))
+
+    assert result == Program((node(args),))
+
+
+@pytest.mark.parametrize("node", [nodes.Progn])
+@pytest.mark.parametrize("program", INVALID_GE_2_ARGS)
+def test_invalid_ge_2_args_fails(program, node):
     with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
         parse(program.replace("$", node.id))
