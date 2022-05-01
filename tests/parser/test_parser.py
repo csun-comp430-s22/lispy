@@ -1,7 +1,7 @@
 import pytest
 
 from lispyc import nodes
-from lispyc.nodes import ComposedForm, Constant, Program, Variable
+from lispyc.nodes import ComposedForm, Constant, List, Program, Variable
 from lispyc.parser import parse
 
 CONSTANT_PARAMS = [
@@ -46,6 +46,43 @@ COMPOSED_FORM_PARAMS = [
     ),
 ]
 
+MULTIPLE_PROGRAMS = [
+    (
+        "a 2 false () 7.9 nil",
+        (Variable("a"), Constant(2), Constant(False), List(()), Constant(7.9), Variable("nil")),
+    ),
+    (
+        f"(myfunc 1 2) true (list 4 5) {COMPOSED_FORM_PARAMS[5][0]} 9e-3",
+        (
+            (ComposedForm(Variable("myfunc"), (Constant(1), Constant(2)))),
+            Constant(True),
+            List((Constant(4), Constant(5))),
+            ComposedForm(COMPOSED_FORM_PARAMS[5][1], COMPOSED_FORM_PARAMS[5][2]),
+            Constant(9e-3),
+        ),
+    ),
+    (
+        "(define f ((x int) (y float)) (list x y)) (f 1 2.5)",
+        (
+            nodes.Define(
+                Variable("f"),
+                (
+                    nodes.FunctionParameter(Variable("x"), nodes.IntType()),
+                    nodes.FunctionParameter(Variable("y"), nodes.FloatType()),
+                ),
+                List((Variable("x"), Variable("y"))),
+            ),
+            ComposedForm(Variable("f"), (Constant(1), Constant(2.5))),
+        ),
+    ),
+]
+
+INVALID_MULTIPLE_PROGRAMS = [
+    "a b (define) 12 ()",
+    "false 82 (car 1 2 3)",
+    "(x 3) 7.8 (cons 19) (list 2) 1 (select a b c)",
+]
+
 
 @pytest.mark.parametrize("program", ["x", "y1", "z_A", "C", "nil", "not", "float"])
 def test_variable_parses(program):
@@ -64,7 +101,7 @@ def test_constant_parses(program, value):
 def test_empty_list_parses():
     result = parse("()")
 
-    assert result == Program((nodes.List(()),))
+    assert result == Program((List(()),))
 
 
 @pytest.mark.parametrize(["program", "name", "args"], COMPOSED_FORM_PARAMS)
@@ -72,3 +109,16 @@ def test_composed_form_parses(program, name, args):
     result = parse(program)
 
     assert result == Program((ComposedForm(name, args),))
+
+
+@pytest.mark.parametrize(["program", "nodes_"], MULTIPLE_PROGRAMS)
+def test_multiple_programs_parses(program, nodes_):
+    result = parse(program)
+
+    assert result == Program(nodes_)
+
+
+@pytest.mark.parametrize("program", INVALID_MULTIPLE_PROGRAMS)
+def test_multiple_programs_propagates_failures(program):
+    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+        parse(program)
