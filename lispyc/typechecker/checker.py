@@ -15,6 +15,13 @@ class TypeChecker:
         self._program = program
         self._unifier = Unifier()
 
+    @classmethod
+    def assert_program_valid(cls, program: Program) -> None:
+        """Typecheck `program` and raise an error if it fails."""
+        checker = cls(program)
+        for form in program.body:
+            checker.check_form(form)
+
     def check_form(self, form: Form) -> Type:
         """Typecheck a `Form` and return its type."""
         match form:
