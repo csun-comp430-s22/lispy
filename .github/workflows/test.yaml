@@ -34,7 +34,7 @@ jobs:
       # Suffix the generated coverage datafile with the name of the runner's OS.
       - name: Run tests
         id: run_tests
-        run: pytest
+        run: pytest -n auto
         env:
           COVERAGE_DATAFILE: .coverage.${{ matrix.os }}
 

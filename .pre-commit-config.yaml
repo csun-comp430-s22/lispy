@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.2.0
     hooks:
       - id: check-merge-conflict
       - id: check-toml
@@ -19,9 +19,10 @@ repos:
     hooks:
       - id: isort
   - repo: https://github.com/psf/black
-    rev: 22.1.0
+    rev: 22.3.0
     hooks:
       - id: black
+        language_version: "3.10"
   - repo: https://github.com/PyCQA/flake8
     rev: &flake8_version 4.0.1
     hooks:
@@ -45,3 +46,12 @@ repos:
           --format,
           "::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s",
         ]
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: pyright
+        language: node
+        pass_filenames: false
+        types: [python]
+        additional_dependencies: ['pyright@1.1.241']

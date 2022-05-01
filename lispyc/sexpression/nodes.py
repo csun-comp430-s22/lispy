@@ -1,24 +1,33 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import lark
 from lark import ast_utils
 
+from lispyc.utils import Abstract
+
 __all__ = ("Node", "SExpression", "Atom", "List", "Program")
 
 
-class Node(ast_utils.Ast):
+@dataclass(frozen=True, slots=True)
+class Node(ast_utils.Ast, ast_utils.WithMeta, Abstract):
     """Base class for all nodes of an abstract syntax tree (AST)."""
 
+    meta: lark.tree.Meta = field(init=False)
 
-@dataclass
-class SExpression(Node, ast_utils.WithMeta):
+    def __init__(self, meta: lark.tree.Meta):
+        # meta has init=False to exclude it from __match_args__. Thus, the field needs to be set
+        # manually. This approach allows both pattern matching and instantiation to be typechecked.
+        object.__setattr__(self, "meta", meta)
+
+
+class SExpression(Node, abstract=True):
     """A symbolic expression. The fundamental syntactic element of lispy."""
 
-    meta: lark.tree.Meta
+    __slots__ = ()
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Atom(SExpression):
     """An atomic S-expression; an atomic literal or a constant.
 
@@ -28,6 +37,10 @@ class Atom(SExpression):
 
     value: str | int | float | bool
 
+    def __init__(self, meta: lark.tree.Meta, value: str | int | float | bool):
+        super(Atom, self).__init__(meta)
+        object.__setattr__(self, "value", value)
+
     def __eq__(self, other: Any) -> bool:  # pragma: no cover
         if isinstance(other, Atom):
             return self.value == other.value
@@ -35,7 +48,7 @@ class Atom(SExpression):
             return self.value == other
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class List(SExpression, ast_utils.AsList):
     """An S-expression list.
 
@@ -45,6 +58,10 @@ class List(SExpression, ast_utils.AsList):
 
     elements: list[SExpression]
 
+    def __init__(self, meta: lark.tree.Meta, elements: list[SExpression]):
+        super(List, self).__init__(meta)
+        object.__setattr__(self, "elements", elements)
+
     def __eq__(self, other: Any) -> bool:  # pragma: no cover
         if isinstance(other, List):
             return self.elements == other.elements
@@ -52,7 +69,7 @@ class List(SExpression, ast_utils.AsList):
             return self.elements == other
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Program(Node, ast_utils.AsList):
     """The top level of a lispy program.
 
@@ -61,6 +78,10 @@ class Program(Node, ast_utils.AsList):
     """
 
     body: list[SExpression]
+
+    def __init__(self, meta: lark.tree.Meta, body: list[SExpression]):
+        super(Program, self).__init__(meta)
+        object.__setattr__(self, "body", body)
 
     def __eq__(self, other: Any) -> bool:  # pragma: no cover
         if isinstance(other, Program):
