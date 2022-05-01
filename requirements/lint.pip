@@ -12,6 +12,8 @@ filelock==3.6.0
     # via virtualenv
 identify==2.5.0
     # via pre-commit
+lark==1.1.2
+    # via -r requirements\requirements.pip
 nodeenv==1.6.0
     # via pre-commit
 platformdirs==2.5.2

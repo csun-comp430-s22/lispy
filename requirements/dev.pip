@@ -52,6 +52,7 @@ iniconfig==1.1.1
     #   pytest
 lark==1.1.2
     # via
+    #   -r requirements\lint.pip
     #   -r requirements\requirements.pip
     #   -r requirements\test.pip
 nodeenv==1.6.0
