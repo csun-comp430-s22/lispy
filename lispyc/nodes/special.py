@@ -292,8 +292,12 @@ class Cond(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, ListNode(branches), default]):
+            case ListNode([id_, *branches, default]):
                 assert id_ == cls.id
+
+                if not branches:
+                    raise ValueError(f"{cls.id} form must have at least one branch.")
+
                 branches = tuple(map(Branch.from_sexp, branches))
                 return cls(branches, parse_form(default))
             case _:
@@ -315,8 +319,12 @@ class Select(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, value, ListNode(branches), default]):
+            case ListNode([id_, value, *branches, default]):
                 assert id_ == cls.id
+
+                if not branches:
+                    raise ValueError(f"{cls.id} form must have at least one branch.")
+
                 branches = tuple(map(Branch.from_sexp, branches))
                 return cls(parse_form(value), branches, parse_form(default))
             case _:
