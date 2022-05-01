@@ -68,7 +68,12 @@ class HashableSequence(typing.Protocol[T]):  # pragma: no cover
     def __len__(self) -> int:
         ...
 
+    @typing.overload
     def __getitem__(self, i: typing.SupportsIndex, /) -> T:
+        ...
+
+    @typing.overload
+    def __getitem__(self, s: slice, /) -> HashableSequence[T]:
         ...
 
     def index(  # noqa: D102
