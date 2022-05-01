@@ -4,6 +4,8 @@ from lispyc import nodes
 from lispyc.nodes import Branch, ComposedForm, Cond, Constant, Program, Variable
 from lispyc.parser import parse
 
+from .data import FORM_PROGRAMS, FORMS
+
 VALID_1_BRANCH_PROGRAMS = [
     "($name$ $value$ ((x 7 y) (a b)) $default$)",
     "(select $value$ ((cond (a b) 1.7) ()) $default$)",
@@ -26,38 +28,6 @@ VALID_NODES = [
 ]
 
 VALID = list(zip(VALID_PROGRAMS, VALID_NODES))
-
-FORM_PROGRAMS = [
-    "()",
-    "(a)",
-    "(1)",
-    "(-7.9)",
-    "(true)",
-    "99",
-    "9.2",
-    "false",
-    "b2_1",
-    "nil",
-    "(list 23 false)",
-    "(x y 1)",
-]
-
-FORM_NODES = [
-    nodes.List(()),
-    ComposedForm(Variable("a"), ()),
-    ComposedForm(Constant(1), ()),
-    ComposedForm(Constant(-7.9), ()),
-    ComposedForm(Constant(True), ()),
-    Constant(99),
-    Constant(9.2),
-    Constant(False),
-    Variable("b2_1"),
-    Variable("nil"),
-    nodes.List((Constant(23), Constant(False))),
-    ComposedForm(Variable("x"), (Variable("y"), Constant(1))),
-]
-
-FORMS = list(zip(FORM_PROGRAMS, FORM_NODES))
 
 
 def replace(program, name: str, value: str, default: str) -> str:
