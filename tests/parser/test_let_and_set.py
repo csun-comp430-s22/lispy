@@ -3,20 +3,21 @@ import pytest
 from lispyc.nodes import ComposedForm, Constant, Let, LetBinding, List, Program, Set, Variable
 from lispyc.parser import parse
 
-from .data import FORM_PROGRAMS, FORMS
+from .data import FORM_PROGRAMS, FORMS, MULTIPLE_FORM_PROGRAMS, MULTIPLE_FORMS
 
-SET_FORMS = FORMS + [("(set x 12)", Set(Variable("x"), Constant(12)))]
-LET_FORMS = SET_FORMS + [
-    (
-        "((f 7) (g true))",
-        ComposedForm(
-            ComposedForm(Variable("f"), (Constant(7),)),
-            (ComposedForm(Variable("g"), (Constant(True),)),),
-        ),
-    )
-]
-MULTIPLE_FORMS = ["1 2", "a b c", "false (x a b)", "(list 1) dx1", "() nil"]
 INVALID_NAMES = ["()", "31", "false", "-1.2", "(list 3)", "(x (2 3))"]
+
+SET_FORM = ("(set x 12)", Set(Variable("x"), Constant(12)))
+LET_BINDING = (
+    "((f 7) (g true))",
+    ComposedForm(
+        ComposedForm(Variable("f"), (Constant(7),)),
+        (ComposedForm(Variable("g"), (Constant(True),)),),
+    ),
+)
+
+FORMS_WITH_SET = FORMS + [SET_FORM]
+FORMS_WITH_SET_AND_BINDING = FORMS_WITH_SET + [LET_BINDING]
 
 MULTIPLE_LET = [
     (
@@ -43,9 +44,7 @@ MULTIPLE_LET = [
     ),
 ]
 
-MULTIPLE_BODY = [
-    ("a 1 false", (Variable("a"), Constant(1), Constant(False))),
-    ("(x a) nil ()", (ComposedForm(Variable("x"), (Variable("a"),)), Variable("nil"), List(()))),
+MULTIPLE_FORMS_WITH_LET = MULTIPLE_FORMS + [
     (
         f"5.6 1 {MULTIPLE_LET[0][0].replace('$body$', '()')} yZ true",
         (
@@ -59,7 +58,7 @@ MULTIPLE_BODY = [
 ]
 
 
-@pytest.mark.parametrize(["program", "form"], SET_FORMS)
+@pytest.mark.parametrize(["program", "form"], FORMS_WITH_SET)
 def test_set_parses(program, form):
     name = "Zx___1D12e"
     result = parse(f"(set {name} {program})")
@@ -85,27 +84,27 @@ def test_set_invalid_name_fails(name, program):
         parse(f"(set {name} {program})")
 
 
-@pytest.mark.parametrize("program", MULTIPLE_FORMS)
+@pytest.mark.parametrize("program", MULTIPLE_FORM_PROGRAMS)
 def test_set_multiple_forms_fails(program):
     with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
         parse(f"(set Zx___1D12e {program})")
 
 
-@pytest.mark.parametrize("program", MULTIPLE_FORMS)
+@pytest.mark.parametrize("program", MULTIPLE_FORM_PROGRAMS)
 def test_set_missing_name_multiple_forms_fails(program):
     with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
         parse(f"(set {program})")
 
 
-@pytest.mark.parametrize(["program2", "form2"], LET_FORMS)
-@pytest.mark.parametrize(["program1", "form1"], LET_FORMS)
+@pytest.mark.parametrize(["program2", "form2"], FORMS_WITH_SET_AND_BINDING)
+@pytest.mark.parametrize(["program1", "form1"], FORMS_WITH_SET_AND_BINDING)
 def test_let_single_binding_and_form_parses(program1, program2, form1, form2):
     result = parse(f"(let ((aZ8__xe_2 {program1})) {program2})")
 
     assert result == Program((Let((LetBinding(Variable("aZ8__xe_2"), form1),), (form2,)),))
 
 
-@pytest.mark.parametrize(["body_program", "body"], LET_FORMS)
+@pytest.mark.parametrize(["body_program", "body"], FORMS_WITH_SET_AND_BINDING)
 @pytest.mark.parametrize(["program", "bindings"], MULTIPLE_LET)
 def test_let_multiple_bindings_parses(program, body_program, bindings, body):
     program = program.replace("$body$", body_program)
@@ -115,7 +114,7 @@ def test_let_multiple_bindings_parses(program, body_program, bindings, body):
     assert result == Program((Let(bindings, (body,)),))
 
 
-@pytest.mark.parametrize(["body_program", "body"], MULTIPLE_BODY)
+@pytest.mark.parametrize(["body_program", "body"], MULTIPLE_FORMS_WITH_LET)
 @pytest.mark.parametrize(["program", "bindings"], MULTIPLE_LET)
 def test_let_multiple_bindings_and_forms_parses(program, body_program, bindings, body):
     program = program.replace("$body$", body_program)
