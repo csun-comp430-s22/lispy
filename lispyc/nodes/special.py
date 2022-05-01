@@ -110,7 +110,9 @@ class List(SpecialForm):
                 assert id_ == cls.id
                 elements = tuple(map(parse_form, elements))
                 return cls(elements)
-            case _:
+            case _:  # pragma: no cover
+                # Unreachable in practice because parse_form already matched the same case before
+                # calling this from_sexp.
                 raise ValueError("Invalid S-expression for special form.")
 
 
@@ -305,6 +307,9 @@ class Cond(SpecialForm):
                 branches = tuple(map(Branch.from_sexp, branches))
                 return cls(branches, parse_form(default))
             case _:
+                # TODO: This isn't raised when a default is missing.
+                # Because *branches can match 0 branches, the one branch that does exist will be
+                # parsed as the default. Thus, a "must have >= 1 branch" error will be raised.
                 raise ValueError("Invalid S-expression for special form.")
 
 
@@ -332,4 +337,5 @@ class Select(SpecialForm):
                 branches = tuple(map(Branch.from_sexp, branches))
                 return cls(parse_form(value), branches, parse_form(default))
             case _:
+                # TODO: This isn't raised when a default is missing.
                 raise ValueError("Invalid S-expression for special form.")
