@@ -192,9 +192,15 @@ class Progn(SpecialForm):
         match sexp:
             case ListNode([id_, *forms]):
                 assert id_ == cls.id
+
+                if len(forms) < 2:
+                    raise ValueError(f"{cls.id} form must have at least two forms as arguments.")
+
                 forms = tuple(map(parse_form, forms))
                 return cls(forms)
-            case _:
+            case _:  # pragma: no cover
+                # Unreachable in practice because parse_form already matched the same case before
+                # calling this from_sexp.
                 raise ValueError("Invalid S-expression for special form.")
 
 
