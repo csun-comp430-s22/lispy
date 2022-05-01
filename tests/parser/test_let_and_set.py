@@ -122,3 +122,17 @@ def test_let_multiple_bindings_and_forms_parses(program, body_program, bindings,
     result = parse(program)
 
     assert result == Program((Let(bindings, body),))
+
+
+@pytest.mark.parametrize(["program", "form"], FORMS_WITH_SET_AND_BINDING)
+def test_let_single_binding_missing_body_fails(program, form):
+    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+        parse(f"(let ((aZ8__xe_2 {program})))")
+
+
+@pytest.mark.parametrize(["program", "bindings"], MULTIPLE_LET)
+def test_let_multiple_bindings_missing_body_fails(program, bindings):
+    program = program.replace("$body$", "")
+
+    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+        parse(program)
