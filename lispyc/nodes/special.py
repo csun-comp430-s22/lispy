@@ -250,8 +250,12 @@ class Let(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, ListNode(bindings), ListNode(body)]):
+            case ListNode([id_, ListNode(bindings), *body]):
                 assert id_ == cls.id
+
+                if not body:
+                    raise ValueError(f"{cls.id} form must have at least one form in its body.")
+
                 bindings = tuple(map(LetBinding.from_sexp, bindings))
                 body = tuple(map(parse_form, body))
                 return cls(bindings, body)
