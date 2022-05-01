@@ -20,7 +20,7 @@ reportPrivateImportUsage = "warning"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --cov= --import-mode=importlib"
+addopts = "-ra -q --cov=lispyc --cov=tests --import-mode=importlib"
 testpaths = ["tests"]
 
 [tool.coverage.paths]
