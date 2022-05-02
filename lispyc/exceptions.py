@@ -7,6 +7,7 @@ class LispyError(Exception):
     """Base class for all lispy compiler exceptions."""
 
     def __init__(self, message: str):
+        super().__init__(message)
         self.message = message
 
 
@@ -29,6 +30,7 @@ class DuplicateNameError(SpecialFormSyntaxError):
     """Raised when a function has a duplicate parameter name or a let has a duplicate name."""
 
     def __init__(self, message: str, name: str):
+        super().__init__(message)
         self.message = message
         self.name = name
 
@@ -63,6 +65,7 @@ class BindingError(LispyError):
     """Raised when a binding-related error occurs."""
 
     def __init__(self, message: str, name: str):
+        super().__init__(message)
         self.message = message
         self.name = name
 
