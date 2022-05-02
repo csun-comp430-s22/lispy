@@ -39,6 +39,8 @@ class TypeChecker:
                 return FloatType()
             case Constant(bool()):
                 return BoolType()
+            case Variable() as variable:
+                return self._get_binding(variable, scope)
             case nodes.List() as list_:
                 return self._check_list(list_, scope)
             case nodes.Set(variable, value):
@@ -90,3 +92,13 @@ class TypeChecker:
             self._unifier.unify(first_type, current_type)
 
         return ListType(first_type)
+
+    def _get_binding(self, variable: Variable, scope: Scope) -> Type:
+        """Get the type of the value bound to the given `variable` in the given `scope`.
+
+        Raise ValueError if the name is not in scope.
+        """
+        if variable in scope:
+            return scope[variable]
+        else:
+            raise ValueError(f"Cannot retrieve binding {variable.name!r}: name is not in scope.")
