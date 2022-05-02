@@ -1,5 +1,5 @@
 import copy
-from collections.abc import MutableMapping
+from collections.abc import Iterable, MutableMapping
 
 from lispyc import nodes
 from lispyc.nodes import ComposedForm, Constant, Form, Program, SpecialForm, Variable
@@ -62,6 +62,8 @@ class TypeChecker:
                 return self._check_progn(progn, scope)
             case nodes.Set(variable, value):
                 return self._bind(variable, value, scope)
+            case nodes.Let() as let:
+                return self._check_let(let, scope)
             case _:
                 raise ValueError(f"Unknown form {form!r}.")
 
@@ -133,26 +135,26 @@ class TypeChecker:
 
     def _check_lambda(self, lambda_: nodes.Lambda, scope: Scope) -> FunctionType:
         """Typecheck a `Lambda` and return its type."""
-        param_names: set[str] = set()
-        param_types: list[Type] = []
-        func_scope = copy.copy(scope)
-
-        for param in lambda_.parameters:
-            self._assert_name_valid(param.name.name)
-            if param.name.name in param_names:
-                raise ValueError(
-                    f"Invalid function definition: duplicate parameter name {param.name.name!r}."
-                )
-
-            param_names.add(param.name.name)
-            param_types.append(param.type)
-
-            # TODO: show warning if param name shadows same name in outer scope.
-            func_scope[param.name] = param.type
-
+        func_scope = self._create_scope(lambda_.parameters, scope)
+        param_types = tuple(param.type for param in lambda_.parameters)
         return_type = self.check_form(lambda_.body, func_scope)
 
-        return FunctionType(tuple(param_types), return_type)
+        return FunctionType(param_types, return_type)
+
+    def _check_let(self, let: nodes.Let, scope: Scope) -> Type:
+        """Typecheck a `Let` and return the type of its body's last form."""
+        # Create FunctionParameters because it's a convenient data structure for storing pairs
+        # of variables and types, which is what _create_scope() needs.
+        params = [
+            nodes.FunctionParameter(b.name, self.check_form(b.value, scope)) for b in let.bindings
+        ]
+
+        let_scope = self._create_scope(params, scope)
+
+        # let's body has the same behaviour as progn, except let uses a new scope.
+        progn = nodes.Progn(let.body)
+
+        return self._check_progn(progn, let_scope)
 
     def _check_list(self, list_: nodes.List, scope: Scope) -> ListType:
         """Typecheck a `List` and return its type.
@@ -182,9 +184,30 @@ class TypeChecker:
         for form in progn.forms:
             type_ = self.check_form(form, scope)
 
+        # TODO: In practice the parser requires > 0 forms for Progn and Let, but I'm still scared.
         assert type_ is not None
 
         return type_
+
+    def _create_scope(self, parameters: Iterable[nodes.FunctionParameter], scope: Scope) -> Scope:
+        """Return a new nested scope from an outer `scope` with the given `parameters` in scope."""
+        names: set[str] = set()
+        nested_scope = copy.copy(scope)
+
+        for param in parameters:
+            self._assert_name_valid(param.name.name)
+            if param.name.name in names:
+                # TODO: Make wording more generalised since this is used by "let" as well.
+                raise ValueError(
+                    f"Invalid function definition: duplicate parameter name {param.name.name!r}."
+                )
+
+            names.add(param.name.name)
+
+            # TODO: show warning if name shadows same name in outer scope.
+            nested_scope[param.name] = param.type
+
+        return nested_scope
 
     def _get_binding(self, variable: Variable, scope: Scope) -> Type:
         """Get the type of the value bound to the given `variable` in the given `scope`.
