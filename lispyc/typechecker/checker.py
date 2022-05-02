@@ -1,3 +1,4 @@
+import copy
 from collections.abc import MutableMapping
 
 from lispyc import nodes
@@ -43,6 +44,8 @@ class TypeChecker:
                 return self._get_binding(variable, scope)
             case ComposedForm() as form:
                 return self._check_composed_form(form, scope)
+            case nodes.Lambda() as lambda_:
+                return self._check_lambda(lambda_, scope)
             case nodes.List() as list_:
                 return self._check_list(list_, scope)
             case nodes.Set(variable, value):
@@ -50,20 +53,21 @@ class TypeChecker:
             case _:
                 raise ValueError(f"Unknown form {form!r}.")
 
+    def _assert_name_valid(self, name: str) -> None:
+        if name in SpecialForm.forms_map:
+            raise ValueError(
+                f"Cannot bind to name {name!r}: rebinding special forms is disallowed."
+            )
+
+        if name == NIL:
+            raise ValueError(f"Cannot bind to name {name!r}: rebinding {NIL!r} is disallowed.")
+
     def _bind(self, variable: Variable, value: Form, scope: Scope) -> Type:
         """Bind or rebind a variable in the given `scope` and return the type of its new value.
 
         The variable's name must not be the name of a special form or "nil".
         """
-        if variable.name in SpecialForm.forms_map:
-            raise ValueError(
-                f"Cannot bind to name {variable.name!r}: rebinding special forms is disallowed."
-            )
-
-        if variable.name == NIL:
-            raise ValueError(
-                f"Cannot bind to name {variable.name!r}: rebinding {NIL!r} is disallowed."
-            )
+        self._assert_name_valid(variable.name)
 
         type_ = self.check_form(value, scope)
         if variable in scope:
@@ -82,6 +86,29 @@ class TypeChecker:
         self._unifier.unify(current_type, expected_type)
 
         return expected_type.return_type
+
+    def _check_lambda(self, lambda_: nodes.Lambda, scope: Scope) -> FunctionType:
+        """Typecheck a `Lambda` and return its type."""
+        param_names: set[str] = set()
+        param_types: list[Type] = []
+        func_scope = copy.copy(scope)
+
+        for param in lambda_.parameters:
+            self._assert_name_valid(param.name.name)
+            if param.name.name in param_names:
+                raise ValueError(
+                    f"Invalid function definition: duplicate parameter name {param.name.name!r}."
+                )
+
+            param_names.add(param.name.name)
+            param_types.append(param.type)
+
+            # TODO: show warning if param name shadows same name in outer scope.
+            func_scope[param.name] = param.type
+
+        return_type = self.check_form(lambda_.body, func_scope)
+
+        return FunctionType(tuple(param_types), return_type)
 
     def _check_list(self, list_: nodes.List, scope: Scope) -> ListType:
         """Typecheck a `List` and return its type.
