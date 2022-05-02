@@ -46,6 +46,10 @@ class TypeChecker:
                 return self._check_composed_form(form, scope)
             case nodes.Lambda() as lambda_:
                 return self._check_lambda(lambda_, scope)
+            case nodes.Define() as define:
+                # (define x ...) is really just (set x (lambda ...)).
+                lambda_ = nodes.Lambda(define.parameters, define.body)
+                return self._bind(define.name, lambda_, scope)
             case nodes.List() as list_:
                 return self._check_list(list_, scope)
             case nodes.Set(variable, value):
