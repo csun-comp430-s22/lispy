@@ -296,7 +296,12 @@ class TypeChecker:
 
         Raise UnboundNameError if the name is not in scope.
         """
-        if variable in scope:
+        if variable.name == NIL:
+            # nil is a special case that's always in scope.
+            # Just like in _check_list, each reference to nil must return a new instance of the type
+            # to prevent nils referenced in different scopes from unifying with each other.
+            return ListType(UnknownType())
+        elif variable in scope:
             return scope[variable]
         else:
             raise exceptions.UnboundNameError(
