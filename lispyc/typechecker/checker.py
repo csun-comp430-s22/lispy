@@ -1,7 +1,7 @@
 import copy
 from collections.abc import Iterable, MutableMapping
 
-from lispyc import nodes
+from lispyc import exceptions, nodes
 from lispyc.nodes import ComposedForm, Constant, Form, Program, SpecialForm, Variable
 from lispyc.nodes.types import BoolType, FloatType, FunctionType, IntType, ListType
 
@@ -24,7 +24,7 @@ class TypeChecker:
 
     @classmethod
     def assert_program_valid(cls, program: Program) -> None:
-        """Typecheck `program` and raise an error if it fails."""
+        """Typecheck `program` and raise LispyError if it fails."""
         checker = cls(program)
         global_scope = {}
 
@@ -47,9 +47,7 @@ class TypeChecker:
             case nodes.Lambda() as lambda_:
                 return self._check_lambda(lambda_, scope)
             case nodes.Define() as define:
-                # (define x ...) is really just (set x (lambda ...)).
-                lambda_ = nodes.Lambda(define.parameters, define.body)
-                return self._bind(define.name, lambda_, scope)
+                return self._check_define(define, scope)
             case nodes.List() as list_:
                 return self._check_list(list_, scope)
             case nodes.Cons() as cons:
@@ -69,16 +67,19 @@ class TypeChecker:
             case nodes.Select() as select:
                 return self._check_select(select, scope)
             case _:
-                raise ValueError(f"Unknown form {form!r}.")
+                raise TypeError(f"Unknown form {form!r}.")
 
     def _assert_name_valid(self, name: str) -> None:
+        """Raise InvalidNameError if `name` is not allowed to be rebound."""
         if name in SpecialForm.forms_map:
-            raise ValueError(
-                f"Cannot bind to name {name!r}: rebinding special forms is disallowed."
+            raise exceptions.InvalidNameError(
+                f"Cannot bind to name {name!r}: rebinding special forms is disallowed", name
             )
 
         if name == NIL:
-            raise ValueError(f"Cannot bind to name {name!r}: rebinding {NIL!r} is disallowed.")
+            raise exceptions.InvalidNameError(
+                f"Cannot bind to name {name!r}: rebinding {NIL!r} is disallowed", name
+            )
 
     def _bind(self, variable: Variable, value: Form, scope: Scope) -> Type:
         """Bind or rebind a variable in the given `scope` and return the type of its new value.
@@ -160,9 +161,35 @@ class TypeChecker:
 
         return expected_cdr_type
 
+    def _check_define(self, define: nodes.Define, scope: Scope) -> Type:
+        """Typecheck a `Define` and return the type of the defined function.
+
+        Raise DuplicateNameError if there is a duplicate name in the function's parameters.
+        """
+        # (define x ...) is really just (set x (lambda ...)).
+        lambda_ = nodes.Lambda(define.parameters, define.body)
+
+        try:
+            return self._bind(define.name, lambda_, scope)
+        except exceptions.DuplicateNameError as e:
+            raise exceptions.DuplicateNameError(
+                f"Invalid syntax for special form define: duplicate parameter name {e.name!r}",
+                e.name,
+            )
+
     def _check_lambda(self, lambda_: nodes.Lambda, scope: Scope) -> FunctionType:
-        """Typecheck a `Lambda` and return its type."""
-        func_scope = self._create_scope(lambda_.parameters, scope)
+        """Typecheck a `Lambda` and return its type.
+
+        Raise DuplicateNameError if there is a duplicate name in the lambda's parameters.
+        """
+        try:
+            func_scope = self._create_scope(lambda_.parameters, scope)
+        except exceptions.DuplicateNameError as e:
+            raise exceptions.DuplicateNameError(
+                f"Invalid syntax for special form lambda: duplicate parameter name {e.name!r}",
+                e.name,
+            )
+
         param_types = tuple(param.type for param in lambda_.parameters)
         return_type = self.check_form(lambda_.body, func_scope)
 
@@ -176,7 +203,12 @@ class TypeChecker:
             nodes.FunctionParameter(b.name, self.check_form(b.value, scope)) for b in let.bindings
         ]
 
-        let_scope = self._create_scope(params, scope)
+        try:
+            let_scope = self._create_scope(params, scope)
+        except exceptions.DuplicateNameError as e:
+            raise exceptions.DuplicateNameError(
+                f"Invalid syntax for special form let: duplicate binding name {e.name!r}", e.name
+            )
 
         # let's body has the same behaviour as progn, except let uses a new scope.
         progn = nodes.Progn(let.body)
@@ -186,7 +218,7 @@ class TypeChecker:
     def _check_list(self, list_: nodes.List, scope: Scope) -> ListType:
         """Typecheck a `List` and return its type.
 
-        The list must be homogeneous i.e. its elements must all have the same type.
+        Raise TypeError if the list is not homogeneous.
         """
         if not list_.elements:
             return ListType(UnknownType())  # It's nil.
@@ -196,12 +228,16 @@ class TypeChecker:
         first_type = self.check_form(next(elements_iter), scope)
 
         # Unify all elements - the list must be homogeneous.
-        for element in elements_iter:
+        for i, element in enumerate(elements_iter, 1):
             current_type = self.check_form(element, scope)
 
-            # TODO: raise more specific error about list not being homogeneous.
-            # Currently, the unifier's errors are too vague to be able to do this.
-            self._unifier.unify(first_type, current_type)
+            try:
+                self._unifier.unify(first_type, current_type)
+            except exceptions.UnificationError:
+                raise exceptions.TypeError(
+                    "List is not homogeneous: "
+                    f"expected type {first_type} but got {current_type} for element {i}"
+                )
 
         return ListType(first_type)
 
@@ -234,16 +270,18 @@ class TypeChecker:
         return default_type
 
     def _create_scope(self, parameters: Iterable[nodes.FunctionParameter], scope: Scope) -> Scope:
-        """Return a new nested scope from an outer `scope` with the given `parameters` in scope."""
+        """Return a new nested scope from an outer `scope` with the given `parameters` in scope.
+
+        Raise DuplicateNameError if there is a duplicate name in `parameters`.
+        """
         names: set[str] = set()
         nested_scope = copy.copy(scope)
 
         for param in parameters:
             self._assert_name_valid(param.name.name)
             if param.name.name in names:
-                # TODO: Make wording more generalised since this is used by "let" as well.
-                raise ValueError(
-                    f"Invalid function definition: duplicate parameter name {param.name.name!r}."
+                raise exceptions.DuplicateNameError(
+                    f"Invalid syntax: duplicate name {param.name.name!r}", param.name.name
                 )
 
             names.add(param.name.name)
@@ -256,9 +294,11 @@ class TypeChecker:
     def _get_binding(self, variable: Variable, scope: Scope) -> Type:
         """Get the type of the value bound to the given `variable` in the given `scope`.
 
-        Raise ValueError if the name is not in scope.
+        Raise UnboundNameError if the name is not in scope.
         """
         if variable in scope:
             return scope[variable]
         else:
-            raise ValueError(f"Cannot retrieve binding {variable.name!r}: name is not in scope.")
+            raise exceptions.UnboundNameError(
+                f"Cannot retrieve binding {variable.name!r}: name is not in scope", variable.name
+            )

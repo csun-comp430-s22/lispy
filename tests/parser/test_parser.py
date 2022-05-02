@@ -1,6 +1,6 @@
 import pytest
 
-from lispyc import nodes
+from lispyc import exceptions, nodes
 from lispyc.nodes import ComposedForm, Constant, List, Program, Variable
 from lispyc.parser import parse
 
@@ -120,5 +120,5 @@ def test_multiple_programs_parses(program, nodes_):
 
 @pytest.mark.parametrize("program", INVALID_MULTIPLE_PROGRAMS)
 def test_multiple_programs_propagates_failures(program):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(exceptions.SyntaxError):
         parse(program)

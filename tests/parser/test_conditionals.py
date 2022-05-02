@@ -1,6 +1,7 @@
 import pytest
 
 from lispyc import nodes
+from lispyc.exceptions import SpecialFormSyntaxError
 from lispyc.nodes import Branch, ComposedForm, Cond, Constant, Program, Variable
 from lispyc.parser import parse
 
@@ -8,7 +9,7 @@ from .data import FORM_PROGRAMS, FORMS
 
 VALID_1_BRANCH_PROGRAMS = [
     "($name$ $value$ ((x 7 y) (a b)) $default$)",
-    "(select $value$ ((cond (a b) 1.7) ()) $default$)",
+    "($name$ $value$ ((cond (a b) 1.7) ()) $default$)",
 ]
 
 VALID_PROGRAMS = [
@@ -57,7 +58,7 @@ def test_select_parses(program, value_program, default_program, value, branches,
 
 @pytest.mark.parametrize("default", FORM_PROGRAMS)
 def test_cond_missing_branches_fails(default):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="cond:"):
         parse(f"(cond {default})")
 
 
@@ -66,7 +67,7 @@ def test_cond_missing_branches_fails(default):
 def test_cond_with_value_fails(program, value):
     program = replace(program, "cond", value, "false")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="branch:"):
         parse(program)
 
 
@@ -74,7 +75,7 @@ def test_cond_with_value_fails(program, value):
 def test_cond_missing_default_fails(program):
     program = replace(program, "cond", "", "")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="cond:"):
         parse(program)
 
 
@@ -83,14 +84,14 @@ def test_cond_missing_default_fails(program):
 def test_cond_invalid_branch_fails(program, invalid_branch):
     program = replace(program, "cond", "", f"{invalid_branch} 12")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="branch:"):
         parse(program)
 
 
 @pytest.mark.parametrize("default", FORM_PROGRAMS)
 @pytest.mark.parametrize("value", FORM_PROGRAMS)
 def test_select_missing_branches_fails(value, default):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="select:"):
         parse(f"(select {value} {default})")
 
 
@@ -98,7 +99,7 @@ def test_select_missing_branches_fails(value, default):
 def test_select_missing_value_and_default_fails(program):
     program = replace(program, "select", "", "")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="select:"):
         parse(program)
 
 
@@ -107,7 +108,7 @@ def test_select_missing_value_and_default_fails(program):
 def test_select_missing_default_fails(program, value):
     program = replace(program, "select", value, "")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="select:"):
         parse(program)
 
 
@@ -116,5 +117,5 @@ def test_select_missing_default_fails(program, value):
 def test_select_invalid_branch_fails(program, invalid_branch):
     program = replace(program, "select", "a", f"{invalid_branch} 12")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError, match="branch:"):
         parse(program)

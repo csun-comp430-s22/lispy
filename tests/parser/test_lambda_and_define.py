@@ -1,6 +1,7 @@
 import pytest
 
 from lispyc import nodes
+from lispyc.exceptions import SpecialFormSyntaxError, TypeSyntaxError
 from lispyc.nodes import ComposedForm, Constant
 from lispyc.nodes import FunctionParameter as Param
 from lispyc.nodes import Program, Variable, types
@@ -86,13 +87,13 @@ def test_lambda_parses(program, params, body):
 
 @pytest.mark.parametrize("program", INVALID)
 def test_invalid_lambda_fails(program):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(program)
 
 
 @pytest.mark.parametrize("program", INVALID_PARAM_TYPES)
 def test_invalid_lambda_param_types_fails(program):
-    with pytest.raises(ValueError, match="Unknown type"):
+    with pytest.raises(TypeSyntaxError):
         parse(program)
 
 
@@ -105,11 +106,11 @@ def test_define_parses(program, params, body):
 
 @pytest.mark.parametrize("program", INVALID)
 def test_invalid_define_fails(program):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(lambda_to_define(program))
 
 
 @pytest.mark.parametrize("program", INVALID_PARAM_TYPES)
 def test_invalid_define_param_types_fails(program):
-    with pytest.raises(ValueError, match="Unknown type"):
+    with pytest.raises(TypeSyntaxError):
         parse(lambda_to_define(program))

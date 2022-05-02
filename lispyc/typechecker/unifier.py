@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from itertools import zip_longest
 
+from lispyc.exceptions import CyclicTypeError, UnificationError
 from lispyc.nodes import types
 
 from .types import UnknownType
@@ -33,20 +34,21 @@ class Unifier:
                 self.unify(left.return_type, right.return_type)
                 self._unify_many(left.parameter_types, right.parameter_types)
             case _:
-                raise ValueError("Unification failed: mismatched types.")
+                raise UnificationError(f"Unification failed: mismatched types {left} and {right}")
 
     def _unify_many(self, left: Iterable[types.Type], right: Iterable[types.Type]) -> None:
         """Unify pairs from `left` and `right`."""
         for left_type, right_type in zip_longest(left, right):
             if left_type is None or right_type is None:
-                raise ValueError("Unification failed: unequal number of types.")
+                raise UnificationError("Unification failed: unequal number of types")
             else:
                 self.unify(left_type, right_type)
 
     def _add_mapping(self, source: UnknownType, dest: types.Type) -> None:
         """Map the unknown `source` type to `dest` type if it's not cyclic."""
         if self._has_unknown(dest, source):
-            raise ValueError("Unification failed: attempt to create cyclic type")
+            # TODO: Include the cyclic path in the exception message.
+            raise CyclicTypeError("Unification failed: attempt to create cyclic type")
         else:
             self._map[source] = dest
 
