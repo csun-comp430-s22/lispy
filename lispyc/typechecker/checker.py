@@ -64,6 +64,8 @@ class TypeChecker:
                 return self._bind(variable, value, scope)
             case nodes.Let() as let:
                 return self._check_let(let, scope)
+            case nodes.Cond() as cond:
+                return self._check_cond(cond, scope)
             case _:
                 raise ValueError(f"Unknown form {form!r}.")
 
@@ -119,6 +121,29 @@ class TypeChecker:
         self._unifier.unify(current_type, expected_type)
 
         return expected_type.return_type
+
+    def _check_cond(self, cond: nodes.Cond, scope: Scope) -> Type:
+        """Typecheck a `Cond` and return its type."""
+        branches_iter = iter(cond.branches)
+        first_branch = next(branches_iter)
+
+        # TODO: set/define shouldn't modify the scope if the branch is false.
+        first_predicate_type = self.check_form(first_branch.predicate, scope)
+        self._unifier.unify(first_predicate_type, BoolType())
+
+        first_value_type = self.check_form(first_branch.value, scope)
+
+        for branch in branches_iter:
+            predicate_type = self.check_form(branch.predicate, scope)
+            self._unifier.unify(first_predicate_type, predicate_type)
+
+            value_type = self.check_form(branch.value, scope)
+            self._unifier.unify(first_value_type, value_type)
+
+        default_type = self.check_form(cond.default, scope)
+        self._unifier.unify(first_value_type, default_type)
+
+        return default_type
 
     def _check_cons(self, cons: nodes.Cons, scope: Scope) -> ListType:
         """Typecheck a `Cons` and return the type of the list it returns."""
