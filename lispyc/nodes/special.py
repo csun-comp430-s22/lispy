@@ -259,9 +259,9 @@ class Let(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, ListNode(bindings), body_1, *body_rest]):
+            case ListNode([id_, ListNode([binding, *bindings]), body_1, *body_rest]):
                 assert id_ == cls.id
-                bindings = tuple(map(LetBinding.from_sexp, bindings))
+                bindings = tuple(map(LetBinding.from_sexp, [binding] + bindings))
                 body = tuple(map(parse_form, [body_1] + body_rest))
                 return cls(bindings, body)
             case _:
