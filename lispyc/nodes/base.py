@@ -75,12 +75,12 @@ class SpecialForm(Form, FromSExpressionMixin["SpecialForm"], metaclass=abc.ABCMe
     """
 
     __forms: typing.ClassVar[dict[str, typing.Type[SpecialForm]]] = {}
-    id: typing.ClassVar[str | None] = None
+    id: typing.ClassVar[str]
 
     def __init_subclass__(cls, /, **kwargs: typing.Any):
         super().__init_subclass__(**kwargs)
 
-        if cls.id is None:
+        if not hasattr(cls, "id"):
             # TODO: allow it to be None if subclass is abstract?
             raise ValueError(
                 f"The 'id' class attribute must be set on subclasses of {SpecialForm.__name__}."
