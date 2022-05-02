@@ -66,6 +66,8 @@ class TypeChecker:
                 return self._check_let(let, scope)
             case nodes.Cond() as cond:
                 return self._check_cond(cond, scope)
+            case nodes.Select() as select:
+                return self._check_select(select, scope)
             case _:
                 raise ValueError(f"Unknown form {form!r}.")
 
@@ -213,6 +215,23 @@ class TypeChecker:
         assert type_ is not None
 
         return type_
+
+    def _check_select(self, select: nodes.Select, scope: Scope) -> Type:
+        """Typecheck a `Select` and return its type."""
+        # TODO: set/define shouldn't modify the scope if the branch is false.
+        select_value_type = self.check_form(select.value, scope)
+        self._unifier.unify(select_value_type, UnknownType())
+
+        default_type = self.check_form(select.default, scope)
+
+        for branch in select.branches:
+            predicate_type = self.check_form(branch.predicate, scope)
+            self._unifier.unify(select_value_type, predicate_type)
+
+            value_type = self.check_form(branch.value, scope)
+            self._unifier.unify(default_type, value_type)
+
+        return default_type
 
     def _create_scope(self, parameters: Iterable[nodes.FunctionParameter], scope: Scope) -> Scope:
         """Return a new nested scope from an outer `scope` with the given `parameters` in scope."""
