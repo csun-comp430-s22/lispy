@@ -1,8 +1,8 @@
 from collections.abc import MutableMapping
 
 from lispyc import nodes
-from lispyc.nodes import Constant, Form, Program, SpecialForm, Variable
-from lispyc.nodes.types import BoolType, FloatType, IntType, ListType
+from lispyc.nodes import ComposedForm, Constant, Form, Program, SpecialForm, Variable
+from lispyc.nodes.types import BoolType, FloatType, FunctionType, IntType, ListType
 
 from .types import Type, UnknownType
 from .unifier import Unifier
@@ -41,6 +41,8 @@ class TypeChecker:
                 return BoolType()
             case Variable() as variable:
                 return self._get_binding(variable, scope)
+            case ComposedForm() as form:
+                return self._check_composed_form(form, scope)
             case nodes.List() as list_:
                 return self._check_list(list_, scope)
             case nodes.Set(variable, value):
@@ -70,6 +72,16 @@ class TypeChecker:
         scope[variable] = type_
 
         return type_
+
+    def _check_composed_form(self, form: ComposedForm, scope: Scope) -> Type:
+        """Typecheck a `ComposedForm` and return the called function's return type."""
+        param_types = tuple(self.check_form(arg, scope) for arg in form.arguments)
+        expected_type = FunctionType(param_types, UnknownType())
+        current_type = self.check_form(form.name, scope)
+
+        self._unifier.unify(current_type, expected_type)
+
+        return expected_type.return_type
 
     def _check_list(self, list_: nodes.List, scope: Scope) -> ListType:
         """Typecheck a `List` and return its type.
