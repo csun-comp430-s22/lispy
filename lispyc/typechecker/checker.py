@@ -52,6 +52,8 @@ class TypeChecker:
                 return self._bind(define.name, lambda_, scope)
             case nodes.List() as list_:
                 return self._check_list(list_, scope)
+            case nodes.Cons() as cons:
+                return self._check_cons(cons, scope)
             case nodes.Set(variable, value):
                 return self._bind(variable, value, scope)
             case _:
@@ -90,6 +92,19 @@ class TypeChecker:
         self._unifier.unify(current_type, expected_type)
 
         return expected_type.return_type
+
+    def _check_cons(self, cons: nodes.Cons, scope: Scope) -> ListType:
+        """Typecheck a `Cons` and return the type of the list it returns."""
+        car_type = self.check_form(cons.car, scope)
+        cdr_type = self.check_form(cons.cdr, scope)
+
+        cdr_element_type = UnknownType()
+        expected_cdr_type = ListType(cdr_element_type)
+
+        self._unifier.unify(cdr_type, expected_cdr_type)
+        self._unifier.unify(car_type, cdr_element_type)
+
+        return expected_cdr_type
 
     def _check_lambda(self, lambda_: nodes.Lambda, scope: Scope) -> FunctionType:
         """Typecheck a `Lambda` and return its type."""
