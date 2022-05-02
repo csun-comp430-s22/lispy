@@ -34,12 +34,12 @@ class TypeChecker:
     def check_form(self, form: Form, scope: Scope) -> Type:
         """Typecheck a `Form` and return its type."""
         match form:
+            case Constant(bool()):
+                return BoolType()
             case Constant(int()):
                 return IntType()
             case Constant(float()):
                 return FloatType()
-            case Constant(bool()):
-                return BoolType()
             case Variable() as variable:
                 return self._get_binding(variable, scope)
             case ComposedForm() as form:
