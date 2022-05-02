@@ -54,6 +54,10 @@ class TypeChecker:
                 return self._check_list(list_, scope)
             case nodes.Cons() as cons:
                 return self._check_cons(cons, scope)
+            case nodes.Car() as car:
+                return self._check_car(car, scope)
+            case nodes.Cdr() as cdr:
+                return self._check_cdr(cdr, scope)
             case nodes.Set(variable, value):
                 return self._bind(variable, value, scope)
             case _:
@@ -82,6 +86,25 @@ class TypeChecker:
         scope[variable] = type_
 
         return type_
+
+    def _check_car(self, car: nodes.Car, scope: Scope) -> Type:
+        """Typecheck a `Car` and return the type of the list element it returns."""
+        type_ = self.check_form(car.list, scope)
+        element_type = UnknownType()
+        expected_type = ListType(element_type)
+
+        self._unifier.unify(type_, expected_type)
+
+        return element_type
+
+    def _check_cdr(self, cdr: nodes.Cdr, scope: Scope) -> ListType:
+        """Typecheck a `Cdr` and return the type of the list it returns."""
+        type_ = self.check_form(cdr.list, scope)
+        expected_type = ListType(UnknownType())
+
+        self._unifier.unify(type_, expected_type)
+
+        return expected_type
 
     def _check_composed_form(self, form: ComposedForm, scope: Scope) -> Type:
         """Typecheck a `ComposedForm` and return the called function's return type."""
