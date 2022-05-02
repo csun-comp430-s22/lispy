@@ -2,6 +2,7 @@ from itertools import combinations
 
 import pytest
 
+from lispyc.exceptions import CyclicTypeError, UnificationError
 from lispyc.nodes import types
 from lispyc.typechecker.types import UnknownType
 from lispyc.typechecker.unifier import Unifier
@@ -144,25 +145,25 @@ def test_transitively_identical_functions_unify(unifier):
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
 def test_different_basic_types_fail(unifier, left, right):
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(left(), right())
 
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
 def test_different_lists_fail(unifier, left, right):
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(types.ListType(left()), types.ListType(right()))
 
 
 @pytest.mark.parametrize(["left", "right"], DIFFERENT_FUNCTION_TYPES)
 def test_different_function_types_fail(unifier, left, right):
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(left, right)
 
 
 @pytest.mark.parametrize(["left", "right"], DIFFERENT_PARAM_COUNTS)
 def test_different_param_counts_fail(unifier, left, right):
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(left, right)
 
 
@@ -174,7 +175,7 @@ def test_transitively_different_basic_types_fail(unifier, left, right):
     unifier.unify(left_unk, left())
     unifier.unify(right_unk, right())
 
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(left_unk, right_unk)
 
 
@@ -191,7 +192,7 @@ def test_transitively_different_lists_fail(unifier, left, right):
     unifier.unify(element_2, right())
     unifier.unify(list_1, list_unk)
 
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(list_2, list_unk)
 
 
@@ -207,7 +208,7 @@ def test_transitively_different_function_params_fail(unifier):
     unifier.unify(param_2_unk, types.FloatType())
     unifier.unify(func_1_unk, func_1)
 
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(func_1_unk, func_2)
 
 
@@ -221,7 +222,7 @@ def test_transitively_different_function_returns_fail(unifier):
     unifier.unify(return_unk, types.IntType())
     unifier.unify(func_1_unk, func_1)
 
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(UnificationError):
         unifier.unify(func_1_unk, func_2)
 
 
@@ -229,7 +230,7 @@ def test_cyclic_list_fails(unifier):
     unknown = UnknownType()
     list_ = types.ListType(unknown)
 
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(CyclicTypeError):
         unifier.unify(unknown, list_)
 
 
@@ -237,7 +238,7 @@ def test_cyclic_function_param_fails(unifier):
     unknown = UnknownType()
     func = types.FunctionType((unknown,), types.BoolType())
 
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(CyclicTypeError):
         unifier.unify(unknown, func)
 
 
@@ -245,5 +246,5 @@ def test_cyclic_function_return_fails(unifier):
     unknown = UnknownType()
     func = types.FunctionType((types.BoolType(),), unknown)
 
-    with pytest.raises(ValueError):  # noqa: PT011 TODO: Use custom exception type.
+    with pytest.raises(CyclicTypeError):
         unifier.unify(unknown, func)

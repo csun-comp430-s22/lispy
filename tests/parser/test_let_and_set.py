@@ -1,5 +1,6 @@
 import pytest
 
+from lispyc.exceptions import SpecialFormSyntaxError
 from lispyc.nodes import ComposedForm, Constant, Let, LetBinding, List, Program, Set, Variable
 from lispyc.parser import parse
 
@@ -67,32 +68,32 @@ def test_set_parses(program, form):
 
 
 def test_set_missing_form_fails():
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse("(set Zx___1D12e)")
 
 
 @pytest.mark.parametrize("program", FORM_PROGRAMS)
 def test_set_missing_name_fails(program):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(f"(set {program})")
 
 
 @pytest.mark.parametrize("program", FORM_PROGRAMS)
 @pytest.mark.parametrize("name", INVALID_NAMES)
 def test_set_invalid_name_fails(name, program):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(f"(set {name} {program})")
 
 
 @pytest.mark.parametrize("program", MULTIPLE_FORM_PROGRAMS)
 def test_set_multiple_forms_fails(program):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(f"(set Zx___1D12e {program})")
 
 
 @pytest.mark.parametrize("program", MULTIPLE_FORM_PROGRAMS)
 def test_set_missing_name_multiple_forms_fails(program):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(f"(set {program})")
 
 
@@ -126,7 +127,7 @@ def test_let_multiple_bindings_and_body_parses(program, body_program, bindings, 
 
 @pytest.mark.parametrize(["program", "form"], FORMS_WITH_SET_AND_BINDING)
 def test_let_single_binding_missing_body_fails(program, form):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(f"(let ((aZ8__xe_2 {program})))")
 
 
@@ -134,17 +135,17 @@ def test_let_single_binding_missing_body_fails(program, form):
 def test_let_multiple_bindings_missing_body_fails(program, bindings):
     program = program.replace("$body$", "")
 
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(program)
 
 
 @pytest.mark.parametrize(["program", "body"], FORMS_WITH_SET)
 def test_let_missing_bindings_single_body_fails(program, body):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(f"(let {program})")
 
 
 @pytest.mark.parametrize(["program", "body"], MULTIPLE_FORMS_WITH_LET)
 def test_let_missing_bindings_multiple_body_fails(program, body):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(f"(let {program})")

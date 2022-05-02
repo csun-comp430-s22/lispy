@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from lispyc.exceptions import SpecialFormSyntaxError
 from lispyc.sexpression.nodes import Atom
 from lispyc.sexpression.nodes import List as ListNode
 from lispyc.sexpression.nodes import SExpression
@@ -45,7 +46,9 @@ class FunctionParameter(Node, FromSExpressionMixin["FunctionParameter"]):
             case ListNode([Atom(str() as name), type_]):
                 return cls(Variable(name), parse_type(type_))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError(
+                    "Invalid syntax for function parameter: expected '(' <name> <type> ')'"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,7 +70,7 @@ class Lambda(SpecialForm):
                 params = tuple(map(FunctionParameter.from_sexp, params))
                 return cls(params, parse_form(body))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "'(' <func-param>* ')' <form>")
 
 
 @dataclass(frozen=True, slots=True)
@@ -90,7 +93,9 @@ class Define(SpecialForm):
                 params = tuple(map(FunctionParameter.from_sexp, params))
                 return cls(Variable(name), params, parse_form(body))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(
+                    cls.id, "<name> '(' <func-param>* ')' <form>"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -113,7 +118,7 @@ class List(SpecialForm):
             case _:  # pragma: no cover
                 # Unreachable in practice because parse_form already matched the same case before
                 # calling this from_sexp.
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<form>*")
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,7 +139,7 @@ class Cons(SpecialForm):
                 assert id_ == cls.id
                 return cls(parse_form(car), parse_form(cdr))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<form> <form>")
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,7 +159,7 @@ class Car(SpecialForm):
                 assert id_ == cls.id
                 return cls(parse_form(list_))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<form>")
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,7 +179,7 @@ class Cdr(SpecialForm):
                 assert id_ == cls.id
                 return cls(parse_form(list_))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<form>")
 
 
 @dataclass(frozen=True, slots=True)
@@ -190,18 +195,12 @@ class Progn(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, *forms]):
+            case ListNode([id_, form_1, form_2, *forms]):
                 assert id_ == cls.id
-
-                if len(forms) < 2:
-                    raise ValueError(f"{cls.id} form must have at least two forms as arguments.")
-
-                forms = tuple(map(parse_form, forms))
+                forms = tuple(map(parse_form, [form_1, form_2] + forms))
                 return cls(forms)
             case _:  # pragma: no cover
-                # Unreachable in practice because parse_form already matched the same case before
-                # calling this from_sexp.
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<form> <form>+")
 
 
 @dataclass(frozen=True, slots=True)
@@ -222,7 +221,7 @@ class Set(SpecialForm):
                 assert id_ == cls.id
                 return cls(Variable(name), parse_form(value))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<name> <form>")
 
 
 @dataclass(frozen=True, slots=True)
@@ -241,7 +240,9 @@ class LetBinding(Node, FromSExpressionMixin["LetBinding"]):
             case ListNode([Atom(str() as name), value]):
                 return cls(Variable(name), parse_form(value))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError(
+                    "Invalid syntax for let binding: expected '(' <name> <form> ')'"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -258,17 +259,13 @@ class Let(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, ListNode(bindings), *body]):
+            case ListNode([id_, ListNode(bindings), body_1, *body_rest]):
                 assert id_ == cls.id
-
-                if not body:
-                    raise ValueError(f"{cls.id} form must have at least one form in its body.")
-
                 bindings = tuple(map(LetBinding.from_sexp, bindings))
-                body = tuple(map(parse_form, body))
+                body = tuple(map(parse_form, [body_1] + body_rest))
                 return cls(bindings, body)
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "'(' <let-binding>+ ')' <form>+")
 
 
 @dataclass(frozen=True, slots=True)
@@ -287,7 +284,9 @@ class Branch(Node, FromSExpressionMixin["Branch"]):
             case ListNode([predicate, value]):
                 return cls(parse_form(predicate), parse_form(value))
             case _:
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError(
+                    "Invalid syntax for branch: expected '(' <form> <value> ')'"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -304,19 +303,12 @@ class Cond(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, *branches, default]):
+            case ListNode([id_, branch, *branches, default]):
                 assert id_ == cls.id
-
-                if not branches:
-                    raise ValueError(f"{cls.id} form must have at least one branch.")
-
-                branches = tuple(map(Branch.from_sexp, branches))
+                branches = tuple(map(Branch.from_sexp, [branch] + branches))
                 return cls(branches, parse_form(default))
             case _:
-                # TODO: This isn't raised when a default is missing.
-                # Because *branches can match 0 branches, the one branch that does exist will be
-                # parsed as the default. Thus, a "must have >= 1 branch" error will be raised.
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<branch>+ <form>")
 
 
 @dataclass(frozen=True, slots=True)
@@ -334,14 +326,9 @@ class Select(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, value, *branches, default]):
+            case ListNode([id_, value, branch, *branches, default]):
                 assert id_ == cls.id
-
-                if not branches:
-                    raise ValueError(f"{cls.id} form must have at least one branch.")
-
-                branches = tuple(map(Branch.from_sexp, branches))
+                branches = tuple(map(Branch.from_sexp, [branch] + branches))
                 return cls(parse_form(value), branches, parse_form(default))
             case _:
-                # TODO: This isn't raised when a default is missing.
-                raise ValueError("Invalid S-expression for special form.")
+                raise SpecialFormSyntaxError.from_syntax(cls.id, "<form> <branch>+ <form>")

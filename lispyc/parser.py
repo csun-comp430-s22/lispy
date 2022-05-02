@@ -1,4 +1,5 @@
-from lispyc import nodes
+from lispyc import exceptions, nodes
+from lispyc.exceptions import TypeSyntaxError
 from lispyc.sexpression import parser
 from lispyc.sexpression.nodes import Atom, List, Program, SExpression
 
@@ -25,10 +26,10 @@ def parse_form(form: SExpression) -> nodes.Form:
             arguments = tuple(map(parse_form, forms))
             return nodes.ComposedForm(name, arguments)
         case List([]):
-            return nodes.List(())  # nil
+            return nodes.List(())  # It's nil.
         case _:  # pragma: no cover
             # Precaution; unreachable in practice because the match is (currently) exhaustive.
-            raise ValueError(f"Unknown form for S-expression {form}.")
+            raise exceptions.SyntaxError("Invalid syntax: unknown form for S-expression")
 
 
 def parse_program(program: Program) -> nodes.Program:
@@ -52,5 +53,9 @@ def parse_type(type_: SExpression) -> nodes.TypeNode:
             return_type = parse_type(return_type)
             param_types = tuple(map(parse_type, param_types))
             return nodes.FunctionType(param_types, return_type)
+        case List([Atom("list"), *_]):
+            raise TypeSyntaxError.from_syntax("list", "<type>")
+        case List([Atom("func"), *_]):
+            raise TypeSyntaxError.from_syntax("type", "'(' <type>* ')' <type>")
         case _:
-            raise ValueError("Unknown type or invalid format for type.")
+            raise TypeSyntaxError("Invalid syntax: unknown type for S-expression")

@@ -1,6 +1,7 @@
 import pytest
 
 from lispyc import nodes
+from lispyc.exceptions import SpecialFormSyntaxError
 from lispyc.nodes import ComposedForm, Constant, Program, Variable
 from lispyc.parser import parse
 
@@ -85,7 +86,7 @@ def test_2_args_parses(program, arg1, arg2, node):
 @pytest.mark.parametrize("node", [nodes.Cons])
 @pytest.mark.parametrize("program", INVALID_2_ARGS)
 def test_invalid_2_args_fails(program, node):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(program.replace("$", node.id))
 
 
@@ -100,7 +101,7 @@ def test_1_arg_parses(program, arg, node):
 @pytest.mark.parametrize("node", [nodes.Car, nodes.Cdr])
 @pytest.mark.parametrize("program", INVALID_1_ARG)
 def test_invalid_1_arg_fails(program, node):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(program.replace("$", node.id))
 
 
@@ -115,5 +116,5 @@ def test_ge_2_args_parses(program, args, node):
 @pytest.mark.parametrize("node", [nodes.Progn])
 @pytest.mark.parametrize("program", INVALID_GE_2_ARGS)
 def test_invalid_ge_2_args_fails(program, node):
-    with pytest.raises(ValueError):  # noqa: PT011  # TODO: Use custom exception type.
+    with pytest.raises(SpecialFormSyntaxError):
         parse(program.replace("$", node.id))
