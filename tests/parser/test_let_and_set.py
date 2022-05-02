@@ -58,6 +58,14 @@ MULTIPLE_FORMS_WITH_LET = MULTIPLE_FORMS + [
     ),
 ]
 
+LET_WITH_INVALID_BINDINGS = [
+    "(let (()) ())",
+    "(let (a b c) 23)",
+    "(let ((x y) (z)) (body stuff))",
+    "(let ((name value) (2 f) (name2 (f 1))) (1 2 3.5))",
+    "(let ((n (list 2 3)) (x u) 4.5 (d e)) body)",
+]
+
 
 @pytest.mark.parametrize(["program", "form"], FORMS_WITH_SET)
 def test_set_parses(program, form):
@@ -149,3 +157,9 @@ def test_let_missing_bindings_single_body_fails(program, body):
 def test_let_missing_bindings_multiple_body_fails(program, body):
     with pytest.raises(SpecialFormSyntaxError, match=r"let( binding)?:"):
         parse(f"(let {program})")
+
+
+@pytest.mark.parametrize("program", LET_WITH_INVALID_BINDINGS)
+def test_let_invalid_bindings_fails(program):
+    with pytest.raises(SpecialFormSyntaxError, match="let binding:"):
+        parse(program)
