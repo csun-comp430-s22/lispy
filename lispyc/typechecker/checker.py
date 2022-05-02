@@ -58,6 +58,8 @@ class TypeChecker:
                 return self._check_car(car, scope)
             case nodes.Cdr() as cdr:
                 return self._check_cdr(cdr, scope)
+            case nodes.Progn() as progn:
+                return self._check_progn(progn, scope)
             case nodes.Set(variable, value):
                 return self._bind(variable, value, scope)
             case _:
@@ -173,6 +175,16 @@ class TypeChecker:
             self._unifier.unify(first_type, current_type)
 
         return ListType(first_type)
+
+    def _check_progn(self, progn: nodes.Progn, scope: Scope) -> Type:
+        """Typecheck a `Progn` and return the type of its last form."""
+        type_ = None
+        for form in progn.forms:
+            type_ = self.check_form(form, scope)
+
+        assert type_ is not None
+
+        return type_
 
     def _get_binding(self, variable: Variable, scope: Scope) -> Type:
         """Get the type of the value bound to the given `variable` in the given `scope`.
