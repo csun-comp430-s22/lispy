@@ -6,6 +6,8 @@
          | "(" "list" <type> ")"
          | "(" "func" "(" <type>* ")" <type> ")"
 
+<nil> ::= "(" ")"
+
 <func-param> ::= "(" <name> <type> ")"
 <lambda> ::= "(" "lambda" "(" <func-param>* ")" <form> ")"
 
