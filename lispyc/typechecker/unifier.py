@@ -61,15 +61,15 @@ class Unifier:
 
         return t
 
-    def _get_transitive_set_representative(self, t: Type) -> Type:
+    def get_transitive_set_representative(self, t: Type) -> Type:
         """Return the set representative for `t` with set representatives for its nested types."""
         match t := self.get_set_representative(t):
             case ListType(element):
-                return ListType(self._get_transitive_set_representative(element))
+                return ListType(self.get_transitive_set_representative(element))
             case FunctionType(params, ret):
                 return FunctionType(
-                    tuple(map(self._get_transitive_set_representative, params)),
-                    self._get_transitive_set_representative(ret),
+                    tuple(map(self.get_transitive_set_representative, params)),
+                    self.get_transitive_set_representative(ret),
                 )
             case _:
                 return t

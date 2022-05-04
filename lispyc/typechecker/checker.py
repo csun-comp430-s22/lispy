@@ -32,7 +32,7 @@ class TypeChecker:
 
         types = [checker._check_form(form, global_scope) for form in program.body]
         for t in types:
-            yield checker._unifier.get_set_representative(t)
+            yield checker._unifier.get_transitive_set_representative(t)
 
     def _check_form(self, form: Form, scope: Scope) -> Type:
         """Typecheck a `Form` and return its type."""

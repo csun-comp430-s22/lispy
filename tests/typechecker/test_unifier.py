@@ -75,8 +75,8 @@ def test_unique_unknowns_unify(unifier):
 
     unifier.unify(unknown_1, unknown_2)
 
-    representative_1 = unifier._get_transitive_set_representative(unknown_1)
-    representative_2 = unifier._get_transitive_set_representative(unknown_2)
+    representative_1 = unifier.get_transitive_set_representative(unknown_1)
+    representative_2 = unifier.get_transitive_set_representative(unknown_2)
 
     assert representative_1 is representative_2
     assert (representative_1 is unknown_1) or (representative_2 is unknown_2)
@@ -117,9 +117,9 @@ def test_transitively_identical_lists_unify(unifier):
     unifier.unify(list_1, list_unk)
     unifier.unify(list_2, list_unk)
 
-    assert ListType(BoolType()) == unifier._get_transitive_set_representative(list_unk)
-    assert BoolType() == unifier._get_transitive_set_representative(element_1)
-    assert BoolType() == unifier._get_transitive_set_representative(element_2)
+    assert ListType(BoolType()) == unifier.get_transitive_set_representative(list_unk)
+    assert BoolType() == unifier.get_transitive_set_representative(element_1)
+    assert BoolType() == unifier.get_transitive_set_representative(element_2)
 
 
 def test_transitively_identical_functions_unify(unifier):
@@ -136,10 +136,10 @@ def test_transitively_identical_functions_unify(unifier):
 
     expected_func = FunctionType((FloatType(), IntType()), BoolType())
 
-    assert expected_func == unifier._get_transitive_set_representative(func_1_unk)
-    assert FloatType() == unifier._get_transitive_set_representative(param_1_unk)
-    assert IntType() == unifier._get_transitive_set_representative(param_2_unk)
-    assert BoolType() == unifier._get_transitive_set_representative(return_unk)
+    assert expected_func == unifier.get_transitive_set_representative(func_1_unk)
+    assert FloatType() == unifier.get_transitive_set_representative(param_1_unk)
+    assert IntType() == unifier.get_transitive_set_representative(param_2_unk)
+    assert BoolType() == unifier.get_transitive_set_representative(return_unk)
 
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
