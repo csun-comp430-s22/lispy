@@ -4,12 +4,11 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from lispyc.exceptions import SpecialFormSyntaxError
-from lispyc.sexpression.nodes import Atom
-from lispyc.sexpression.nodes import List as ListNode
-from lispyc.sexpression.nodes import SExpression
-from lispyc.typechecker import types
+from lispyc.sexpression import Atom
+from lispyc.sexpression import List as ListSExp
+from lispyc.sexpression import SExpression
 
-from .base import Form, FromSExpressionMixin, Node, SpecialForm
+from .base import Form, FromSExpressionMixin, Node, SpecialForm, Type
 from .elementary import Variable
 
 __all__ = (
@@ -34,7 +33,7 @@ class FunctionParameter(Node, FromSExpressionMixin["FunctionParameter"]):
     """TODO."""
 
     name: Variable
-    type: types.Type
+    type: Type
 
     @classmethod
     def from_sexp(cls, sexp: SExpression) -> FunctionParameter:
@@ -42,7 +41,7 @@ class FunctionParameter(Node, FromSExpressionMixin["FunctionParameter"]):
         from lispyc.parser import parse_type
 
         match sexp:
-            case ListNode([Atom(str() as name), type_]):
+            case ListSExp([Atom(str() as name), type_]):
                 return cls(Variable(name), parse_type(type_))
             case _:
                 raise SpecialFormSyntaxError(
@@ -64,7 +63,7 @@ class Lambda(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, ListNode(params), body]):
+            case ListSExp([id_, ListSExp(params), body]):
                 assert id_ == cls.id
                 params = tuple(map(FunctionParameter.from_sexp, params))
                 return cls(params, parse_form(body))
@@ -85,7 +84,7 @@ class List(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, *elements]):
+            case ListSExp([id_, *elements]):
                 assert id_ == cls.id
                 elements = tuple(map(parse_form, elements))
                 return cls(elements)
@@ -109,7 +108,7 @@ class Cons(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, car, cdr]):
+            case ListSExp([id_, car, cdr]):
                 assert id_ == cls.id
                 return cls(parse_form(car), parse_form(cdr))
             case _:
@@ -129,7 +128,7 @@ class Car(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, list_]):
+            case ListSExp([id_, list_]):
                 assert id_ == cls.id
                 return cls(parse_form(list_))
             case _:
@@ -149,7 +148,7 @@ class Cdr(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, list_]):
+            case ListSExp([id_, list_]):
                 assert id_ == cls.id
                 return cls(parse_form(list_))
             case _:
@@ -169,7 +168,7 @@ class Progn(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, form_1, form_2, *forms]):
+            case ListSExp([id_, form_1, form_2, *forms]):
                 assert id_ == cls.id
                 forms = tuple(map(parse_form, [form_1, form_2] + forms))
                 return cls(forms)
@@ -191,7 +190,7 @@ class Set(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, Atom(str() as name), value]):
+            case ListSExp([id_, Atom(str() as name), value]):
                 assert id_ == cls.id
                 return cls(Variable(name), parse_form(value))
             case _:
@@ -211,7 +210,7 @@ class LetBinding(Node, FromSExpressionMixin["LetBinding"]):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([Atom(str() as name), value]):
+            case ListSExp([Atom(str() as name), value]):
                 return cls(Variable(name), parse_form(value))
             case _:
                 raise SpecialFormSyntaxError(
@@ -233,7 +232,7 @@ class Let(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, ListNode([binding, *bindings]), body_1, *body_rest]):
+            case ListSExp([id_, ListSExp([binding, *bindings]), body_1, *body_rest]):
                 assert id_ == cls.id
                 bindings = tuple(map(LetBinding.from_sexp, [binding] + bindings))
                 body = tuple(map(parse_form, [body_1] + body_rest))
@@ -255,7 +254,7 @@ class Branch(Node, FromSExpressionMixin["Branch"]):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([predicate, value]):
+            case ListSExp([predicate, value]):
                 return cls(parse_form(predicate), parse_form(value))
             case _:
                 raise SpecialFormSyntaxError(
@@ -277,7 +276,7 @@ class Cond(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, branch, *branches, default]):
+            case ListSExp([id_, branch, *branches, default]):
                 assert id_ == cls.id
                 branches = tuple(map(Branch.from_sexp, [branch] + branches))
                 return cls(branches, parse_form(default))
@@ -300,7 +299,7 @@ class Select(SpecialForm):
         from lispyc.parser import parse_form
 
         match sexp:
-            case ListNode([id_, value, branch, *branches, default]):
+            case ListSExp([id_, value, branch, *branches, default]):
                 assert id_ == cls.id
                 branches = tuple(map(Branch.from_sexp, [branch] + branches))
                 return cls(parse_form(value), branches, parse_form(default))

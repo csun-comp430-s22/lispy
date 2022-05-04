@@ -4,12 +4,12 @@ from unittest.mock import MagicMock
 import pytest
 
 from lispyc import nodes
-from lispyc.sexpression.nodes import SExpression
+from lispyc.sexpression import SExpression
 
 ABSTRACT_NODE_PARAMS = [
     nodes.Node,
     nodes.FromSExpressionMixin,
-    nodes.TypeNode,
+    nodes.Type,
     nodes.Form,
     nodes.ElementaryForm,
     nodes.SpecialForm,

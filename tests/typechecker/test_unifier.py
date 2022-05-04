@@ -3,49 +3,48 @@ from itertools import combinations
 import pytest
 
 from lispyc.exceptions import CyclicTypeError, UnificationError
-from lispyc.nodes import types
-from lispyc.typechecker.types import UnknownType
-from lispyc.typechecker.unifier import Unifier
+from lispyc.nodes import BoolType, FloatType, FunctionType, IntType, ListType, UnknownType
+from lispyc.typechecker import Unifier
 
-BASIC_TYPES = [types.IntType, types.FloatType, types.BoolType]
+BASIC_TYPES = [IntType, FloatType, BoolType]
 BASIC_TYPE_PAIRS = list(combinations(BASIC_TYPES, r=2))
 
 DIFFERENT_FUNCTION_TYPES = [
     (
-        types.FunctionType((types.FloatType(),), types.BoolType()),
-        types.FunctionType((types.IntType(),), types.BoolType()),
+        FunctionType((FloatType(),), BoolType()),
+        FunctionType((IntType(),), BoolType()),
     ),
     (
-        types.FunctionType((types.FloatType(),), types.BoolType()),
-        types.FunctionType((types.FloatType(),), types.IntType()),
+        FunctionType((FloatType(),), BoolType()),
+        FunctionType((FloatType(),), IntType()),
     ),
     (
-        types.FunctionType((types.IntType(),), types.BoolType()),
-        types.FunctionType((types.FloatType(),), types.IntType()),
+        FunctionType((IntType(),), BoolType()),
+        FunctionType((FloatType(),), IntType()),
     ),
     (
-        types.FunctionType((types.BoolType(), types.FloatType()), types.IntType()),
-        types.FunctionType((types.FloatType(), types.BoolType()), types.IntType()),
+        FunctionType((BoolType(), FloatType()), IntType()),
+        FunctionType((FloatType(), BoolType()), IntType()),
     ),
 ]
 
 DIFFERENT_PARAM_COUNTS = [
     (
-        types.FunctionType((), types.BoolType()),
-        types.FunctionType((types.BoolType(),), types.BoolType()),
+        FunctionType((), BoolType()),
+        FunctionType((BoolType(),), BoolType()),
     ),
     (
-        types.FunctionType((types.FloatType(), types.IntType()), types.BoolType()),
-        types.FunctionType((types.FloatType(),), types.BoolType()),
+        FunctionType((FloatType(), IntType()), BoolType()),
+        FunctionType((FloatType(),), BoolType()),
     ),
     (
-        types.FunctionType((types.BoolType(), types.IntType(), types.BoolType()), types.BoolType()),
-        types.FunctionType((types.IntType(),), types.BoolType()),
+        FunctionType((BoolType(), IntType(), BoolType()), BoolType()),
+        FunctionType((IntType(),), BoolType()),
     ),
     (
         # Different types too.
-        types.FunctionType((types.BoolType(), types.IntType()), types.FloatType()),
-        types.FunctionType((types.IntType(),), types.IntType()),
+        FunctionType((BoolType(), IntType()), FloatType()),
+        FunctionType((IntType(),), IntType()),
     ),
 ]
 
@@ -84,8 +83,8 @@ def test_unique_unknowns_unify(unifier):
 
 
 def test_identical_lists_unify(unifier):
-    list_1 = types.ListType(types.FloatType())
-    list_2 = types.ListType(types.FloatType())
+    list_1 = ListType(FloatType())
+    list_2 = ListType(FloatType())
 
     unifier.unify(list_1, list_2)
 
@@ -93,8 +92,8 @@ def test_identical_lists_unify(unifier):
 
 
 def test_identical_functions_unify(unifier):
-    func_1 = types.FunctionType((types.IntType(), types.BoolType()), types.FloatType())
-    func_2 = types.FunctionType((types.IntType(), types.BoolType()), types.FloatType())
+    func_1 = FunctionType((IntType(), BoolType()), FloatType())
+    func_2 = FunctionType((IntType(), BoolType()), FloatType())
 
     unifier.unify(func_1, func_2)
 
@@ -111,16 +110,16 @@ def test_transitively_identical_lists_unify(unifier):
     element_2 = UnknownType()
     list_unk = UnknownType()
 
-    list_1 = types.ListType(element_1)
-    list_2 = types.ListType(element_2)
+    list_1 = ListType(element_1)
+    list_2 = ListType(element_2)
 
-    unifier.unify(types.BoolType(), element_2)
+    unifier.unify(BoolType(), element_2)
     unifier.unify(list_1, list_unk)
     unifier.unify(list_2, list_unk)
 
-    assert types.ListType(types.BoolType()) == unifier._get_transitive_set_representative(list_unk)
-    assert types.BoolType() == unifier._get_transitive_set_representative(element_1)
-    assert types.BoolType() == unifier._get_transitive_set_representative(element_2)
+    assert ListType(BoolType()) == unifier._get_transitive_set_representative(list_unk)
+    assert BoolType() == unifier._get_transitive_set_representative(element_1)
+    assert BoolType() == unifier._get_transitive_set_representative(element_2)
 
 
 def test_transitively_identical_functions_unify(unifier):
@@ -129,18 +128,18 @@ def test_transitively_identical_functions_unify(unifier):
     return_unk = UnknownType()
     func_1_unk = UnknownType()
 
-    func_1 = types.FunctionType((types.FloatType(), param_2_unk), types.BoolType())
-    func_2 = types.FunctionType((param_1_unk, types.IntType()), return_unk)
+    func_1 = FunctionType((FloatType(), param_2_unk), BoolType())
+    func_2 = FunctionType((param_1_unk, IntType()), return_unk)
 
     unifier.unify(func_1_unk, func_1)
     unifier.unify(func_1_unk, func_2)
 
-    expected_func = types.FunctionType((types.FloatType(), types.IntType()), types.BoolType())
+    expected_func = FunctionType((FloatType(), IntType()), BoolType())
 
     assert expected_func == unifier._get_transitive_set_representative(func_1_unk)
-    assert types.FloatType() == unifier._get_transitive_set_representative(param_1_unk)
-    assert types.IntType() == unifier._get_transitive_set_representative(param_2_unk)
-    assert types.BoolType() == unifier._get_transitive_set_representative(return_unk)
+    assert FloatType() == unifier._get_transitive_set_representative(param_1_unk)
+    assert IntType() == unifier._get_transitive_set_representative(param_2_unk)
+    assert BoolType() == unifier._get_transitive_set_representative(return_unk)
 
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
@@ -152,7 +151,7 @@ def test_different_basic_types_fail(unifier, left, right):
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
 def test_different_lists_fail(unifier, left, right):
     with pytest.raises(UnificationError):
-        unifier.unify(types.ListType(left()), types.ListType(right()))
+        unifier.unify(ListType(left()), ListType(right()))
 
 
 @pytest.mark.parametrize(["left", "right"], DIFFERENT_FUNCTION_TYPES)
@@ -185,8 +184,8 @@ def test_transitively_different_lists_fail(unifier, left, right):
     element_2 = UnknownType()
     list_unk = UnknownType()
 
-    list_1 = types.ListType(element_1)
-    list_2 = types.ListType(element_2)
+    list_1 = ListType(element_1)
+    list_2 = ListType(element_2)
 
     unifier.unify(element_1, left())
     unifier.unify(element_2, right())
@@ -201,11 +200,11 @@ def test_transitively_different_function_params_fail(unifier):
     param_2_unk = UnknownType()
     func_1_unk = UnknownType()
 
-    func_1 = types.FunctionType((types.FloatType(), param_2_unk), types.BoolType())
-    func_2 = types.FunctionType((param_1_unk, types.IntType()), types.BoolType())
+    func_1 = FunctionType((FloatType(), param_2_unk), BoolType())
+    func_2 = FunctionType((param_1_unk, IntType()), BoolType())
 
-    unifier.unify(param_1_unk, types.BoolType())
-    unifier.unify(param_2_unk, types.FloatType())
+    unifier.unify(param_1_unk, BoolType())
+    unifier.unify(param_2_unk, FloatType())
     unifier.unify(func_1_unk, func_1)
 
     with pytest.raises(UnificationError):
@@ -216,10 +215,10 @@ def test_transitively_different_function_returns_fail(unifier):
     return_unk = UnknownType()
     func_1_unk = UnknownType()
 
-    func_1 = types.FunctionType((types.FloatType(), types.IntType()), types.BoolType())
-    func_2 = types.FunctionType((types.FloatType(), types.IntType()), return_unk)
+    func_1 = FunctionType((FloatType(), IntType()), BoolType())
+    func_2 = FunctionType((FloatType(), IntType()), return_unk)
 
-    unifier.unify(return_unk, types.IntType())
+    unifier.unify(return_unk, IntType())
     unifier.unify(func_1_unk, func_1)
 
     with pytest.raises(UnificationError):
@@ -228,7 +227,7 @@ def test_transitively_different_function_returns_fail(unifier):
 
 def test_cyclic_list_fails(unifier):
     unknown = UnknownType()
-    list_ = types.ListType(unknown)
+    list_ = ListType(unknown)
 
     with pytest.raises(CyclicTypeError):
         unifier.unify(unknown, list_)
@@ -236,7 +235,7 @@ def test_cyclic_list_fails(unifier):
 
 def test_cyclic_function_param_fails(unifier):
     unknown = UnknownType()
-    func = types.FunctionType((unknown,), types.BoolType())
+    func = FunctionType((unknown,), BoolType())
 
     with pytest.raises(CyclicTypeError):
         unifier.unify(unknown, func)
@@ -244,7 +243,7 @@ def test_cyclic_function_param_fails(unifier):
 
 def test_cyclic_function_return_fails(unifier):
     unknown = UnknownType()
-    func = types.FunctionType((types.BoolType(),), unknown)
+    func = FunctionType((BoolType(),), unknown)
 
     with pytest.raises(CyclicTypeError):
         unifier.unify(unknown, func)

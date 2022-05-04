@@ -1,14 +1,13 @@
-from lispyc import exceptions, nodes
+from lispyc import exceptions, nodes, sexpression
 from lispyc.exceptions import TypeSyntaxError
-from lispyc.sexpression import parser
-from lispyc.sexpression.nodes import Atom, List, Program, SExpression
+from lispyc.sexpression import Atom, List, Program, SExpression
 
 __all__ = ("parse", "parse_form", "parse_program", "parse_type")
 
 
 def parse(program: str) -> nodes.Program:
     """Parse a lispy program into an AST."""
-    program_node = parser.parse(program)
+    program_node = sexpression.parse(program)
     return parse_program(program_node)
 
 
@@ -38,8 +37,8 @@ def parse_program(program: Program) -> nodes.Program:
     return nodes.Program(body)
 
 
-def parse_type(type_: SExpression) -> nodes.TypeNode:
-    """Parse an `SExpression` into a `TypeNode`."""
+def parse_type(type_: SExpression) -> nodes.Type:
+    """Parse an `SExpression` into a `Type`."""
     match type_:
         case Atom("int"):
             return nodes.IntType()

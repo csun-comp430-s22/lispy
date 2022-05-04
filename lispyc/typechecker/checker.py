@@ -2,13 +2,12 @@ import copy
 from collections.abc import Iterable, Iterator, MutableMapping
 
 from lispyc import exceptions, nodes
-from lispyc.nodes import ComposedForm, Constant, Form, Program, SpecialForm, Variable
-from lispyc.nodes.types import BoolType, FloatType, FunctionType, IntType, ListType
+from lispyc.nodes import ComposedForm, Constant, Form, Program, SpecialForm, Type, Variable
+from lispyc.nodes.types import BoolType, FloatType, FunctionType, IntType, ListType, UnknownType
 
-from .types import Type, UnknownType
 from .unifier import Unifier
 
-__all__ = ("TypeChecker",)
+__all__ = ("TypeChecker", "NIL")
 
 Scope = MutableMapping[Variable, Type]
 

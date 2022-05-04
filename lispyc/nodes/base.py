@@ -6,14 +6,13 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from lispyc.sexpression.nodes import SExpression
-from lispyc.typechecker.types import Type
+from lispyc.sexpression import SExpression
 from lispyc.utils import Abstract, is_redefined_dataclass_with_slots
 
 __all__ = (
     "Node",
     "FromSExpressionMixin",
-    "TypeNode",
+    "Type",
     "Form",
     "ElementaryForm",
     "ComposedForm",
@@ -41,7 +40,7 @@ class FromSExpressionMixin(typing.Generic[T], metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-class TypeNode(Type, Node, abstract=True):
+class Type(Node, abstract=True):
     """Base class for nodes representing types."""
 
     __slots__ = ()
