@@ -62,10 +62,9 @@ MULTIPLE_PROGRAMS = [
         ),
     ),
     (
-        "(define f ((x int) (y float)) (list x y)) (f 1 2.5)",
+        "(lambda ((x int) (y float)) (list x y)) (f 1 2.5)",
         (
-            nodes.Define(
-                Variable("f"),
+            nodes.Lambda(
                 (
                     nodes.FunctionParameter(Variable("x"), nodes.IntType()),
                     nodes.FunctionParameter(Variable("y"), nodes.FloatType()),
@@ -78,7 +77,7 @@ MULTIPLE_PROGRAMS = [
 ]
 
 INVALID_MULTIPLE_PROGRAMS = [
-    "a b (define) 12 ()",
+    "a b (lambda) 12 ()",
     "false 82 (car 1 2 3)",
     "(x 3) 7.8 (cons 19) (list 2) 1 (select a b c)",
 ]

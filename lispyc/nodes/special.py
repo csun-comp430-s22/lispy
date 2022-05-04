@@ -15,7 +15,6 @@ from .elementary import Variable
 __all__ = (
     "FunctionParameter",
     "Lambda",
-    "Define",
     "List",
     "Cons",
     "Car",
@@ -71,31 +70,6 @@ class Lambda(SpecialForm):
                 return cls(params, parse_form(body))
             case _:
                 raise SpecialFormSyntaxError.from_syntax(cls.id, "'(' <func-param>* ')' <form>")
-
-
-@dataclass(frozen=True, slots=True)
-class Define(SpecialForm):
-    """TODO."""
-
-    id = "define"
-    name: Variable
-    parameters: Sequence[FunctionParameter]
-    body: Form
-
-    @classmethod
-    def from_sexp(cls, sexp: SExpression) -> Define:
-        """Parse an `SExpression` into a new `Define`."""
-        from lispyc.parser import parse_form
-
-        match sexp:
-            case ListNode([id_, Atom(str() as name), ListNode(params), body]):
-                assert id_ == cls.id
-                params = tuple(map(FunctionParameter.from_sexp, params))
-                return cls(Variable(name), params, parse_form(body))
-            case _:
-                raise SpecialFormSyntaxError.from_syntax(
-                    cls.id, "<name> '(' <func-param>* ')' <form>"
-                )
 
 
 @dataclass(frozen=True, slots=True)
