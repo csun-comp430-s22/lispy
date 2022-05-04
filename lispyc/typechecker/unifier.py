@@ -17,8 +17,8 @@ class Unifier:
 
     def unify(self, left: types.Type, right: types.Type) -> None:
         """Unify the `left` and `right` types."""
-        left = self._get_set_representative(left)
-        right = self._get_set_representative(right)
+        left = self.get_set_representative(left)
+        right = self.get_set_representative(right)
 
         if left == right:
             return
@@ -52,7 +52,7 @@ class Unifier:
         else:
             self._map[source] = dest
 
-    def _get_set_representative(self, t: types.Type) -> types.Type:
+    def get_set_representative(self, t: types.Type) -> types.Type:
         """Return the set representative type for `t`."""
         # Assume all keys are of UnknownType as denoted by the map's type annotation.
         while next_type := self._map.get(t):  # type: ignore
@@ -62,7 +62,7 @@ class Unifier:
 
     def _get_transitive_set_representative(self, t: types.Type) -> types.Type:
         """Return the set representative for `t` with set representatives for its nested types."""
-        match t := self._get_set_representative(t):
+        match t := self.get_set_representative(t):
             case types.ListType(element):
                 return types.ListType(self._get_transitive_set_representative(element))
             case types.FunctionType(params, ret):
@@ -75,7 +75,7 @@ class Unifier:
 
     def _has_unknown(self, t: types.Type, unknown: UnknownType) -> bool:
         """Return True if `t` is `unknown` or contains it."""
-        match t := self._get_set_representative(t):
+        match t := self.get_set_representative(t):
             case UnknownType():
                 return t is unknown
             case types.ListType(element):
