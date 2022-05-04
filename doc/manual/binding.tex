@@ -1,6 +1,6 @@
 Recall that variables can be bound to values, and existing variables can be assigned new values. This section deals with how these operations are performed in the language.
 
-But first, clarification is needed on what constitutes a valid name for a binding. Generally, a valid name is any atomic literal. This means numbers and the Boolean constants \texttt{true} and \texttt{false} are not valid names. Special forms cannot be assigned new values. However, built-in function names (including special form names) can be used as names for new bindings. This results in \textit{shadowing}, a subject explained in~\nameref{sec:scope}.
+But first, clarification is needed on what constitutes a valid name for a binding. Generally, a valid name is any atomic literal. This means numbers and the Boolean constants \texttt{true} and \texttt{false} are not valid names. Special forms and \texttt{nil} cannot be assigned new values, nor can they be used as names for new bindings. However, other built-in function names can be used as names for new bindings. This results in \textit{shadowing}, a subject explained in~\nameref{sec:scope}.
 
 \subsection{let}
 A way to bind variables was introduced with lambda expressions. However, as with the problem \texttt{progn} solves, writing lambdas for this becomes tedious. Instead, the special form \texttt{let} can be used to bind variables. It can be thought of as a more powerful version of \texttt{progn}.
