@@ -31,7 +31,7 @@ Notice that each variable must have an initial value it's bound to. Because of t
 % TODO: show how let translates to a lambda that is immediately called.
 
 \subsection{set}
-The special form \texttt{set} is a simpler way to create a single binding. It can also be used to assign a new value to a variable.
+The special form \texttt{set} assigns a new value to a variable.
 
 \begin{figure}[htp]
     \centering
@@ -42,6 +42,4 @@ The special form \texttt{set} is a simpler way to create a single binding. It ca
     \captionof{figure}{The \texttt{set} special form.}
 \end{figure}
 
-$name$ and $value$ are similar to the binding pairs of \texttt{let}. $name$ can either be the name of a new variable, or the name of an existing variable that is currently accessible. In the former case, a new binding is created. In the latter case, the variable is rebound to the new value, and the value must have the same type as value being overwritten. \texttt{set} returns $value$.
-
-Unlike \texttt{let}, \texttt{set} doesn't have any following forms that have access to the binding. So, from where will this new binding be accessible? This is discussed in the following section on scope.
+$name$ and $value$ are similar to the binding pairs of \texttt{let}. $name$ must be the name of an existing variable that is currently accessible. The variable is rebound to the new value, and the value must have the same type as value being overwritten. \texttt{set} returns $value$.

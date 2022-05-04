@@ -88,23 +88,10 @@ Unlike regular functions, special forms are not first-class citizens. However, t
     \captionof{figure}{A lambda function wrapping a special form and being passed to another function. This is effectively doing $3 \times 2 = 6$.}
 \end{figure}
 
-\subsubsection{define}
+\subsubsection{Named Functions}
 Lambda functions are not inherently bound to any variable. However, it can be quite useful to define a function so it can be re-used later. Since lambda functions are first-class citizens, it is valid to assign a lambda expression to a variable.
 
-One way to do this has actually already been shown: rely on the binding mechanism of a lambda expression. A lambda can be bound to another lambda's parameters, and then the lambda will be accessible via a variable within the other lambda. However, this is tedious. A more convenient way to define functions with names is to use the \texttt{define} special form.
-
-\begin{figure}[htp]
-    \centering
-    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
-        (define ?$name$? ((x int) (y int))
-          (div x y)
-        )
-    \end{cminted}
-    \captionsetup[figure]{font=small}
-    \captionof{figure}{The \texttt{define} special form.}
-\end{figure}
-
-Later, the special form \texttt{set} will be discussed, which is a more general way of creating variables. \texttt{define} is actually equivalent to \texttt{(set $name$ (lambda $\ldots$))}.
+One way to do this has actually already been shown: rely on the binding mechanism of a lambda expression. A lambda can be bound to another lambda's parameters, and then the lambda will be accessible via a variable within the other lambda. However, this is tedious. A more convenient way to define functions with names is to use the \texttt{let} special form. This will be discussed in~\nameref{sec:bindingassign}.
 
 \subsection{list}
 The \texttt{list} type stores a homogenous (i.e.\ all of the same type) sequence of elements. Lists always have \texttt{nil} as the final element.

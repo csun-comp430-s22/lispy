@@ -21,18 +21,7 @@ In a function scope, a binding defined within a function does not extend outside
 In a \texttt{let} scope, a binding has scope within the lexical context of that \texttt{let} expression (again, this is lexical scoping). As with functions, bindings go out of context when other functions are called and come back into context when that called function returns. Thus, the initial bindings (the $(a_i\ d_i)$ pairs) are accessible to all forms in the body, but not outside the \texttt{let} expression.
 
 \subsection{set}
-\texttt{set} can create a new binding or rebind an existing variable. When a new binding is created by \texttt{set}, the scope of that binding is the enclosing scope of the \texttt{set} call. It is not possible to create a binding that has a more outer scope.
-
-\begin{figure}[htp]
-    \centering
-    \begin{cminted}[autogobble=true, escapeinside=??]{lisp}
-        (lambda (a) (progn (set b 2) (prod a b)))
-    \end{cminted}
-    \captionsetup[figure]{font=small}
-    \captionof{figure}{The scope of \texttt{b} is the scope of the enclosing lambda function; \texttt{a} and \texttt{b} have the same scope.}
-\end{figure}
-
-For \texttt{set} to rebind an existing variable, that variable has to be in an enclosing scope of the \texttt{set} call i.e.\ it should be possible to resolve that name as described earlier. Otherwise, the name is considered unbound, and a new binding within the enclosing scope is created instead.
+For \texttt{set} to rebind an existing variable, that variable has to be in an enclosing scope of the \texttt{set} call i.e.\ it should be possible to resolve that name as described earlier. Otherwise, the name is considered unbound and the program is considered invalid.
 
 \subsection{Closures}
 Nested functions complicate the matter. First, because a nested function is defined within the local lexical context, calling it does not cause bindings to go out of context. The nested function will have access to its own bindings and those of its enclosing scope. However, the enclosing scope will not have access to the nested function's bindings.

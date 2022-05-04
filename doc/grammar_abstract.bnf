@@ -11,8 +11,6 @@
 <func-param> ::= "(" <name> <type> ")"
 <lambda> ::= "(" "lambda" "(" <func-param>* ")" <form> ")"
 
-<define> ::= "(" "define" <name> "(" <func-param>* ")" <form> ")"
-
 <list> ::= "(" "list" <form>* ")"
 <cons> ::= "(" "cons" <form> <form> ")"
 <car> ::= "(" "car" <form> ")"
