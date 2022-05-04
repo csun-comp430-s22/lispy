@@ -74,10 +74,6 @@ INVALID_PARAM_TYPES = [
 ]
 
 
-def lambda_to_define(program: str) -> str:
-    return "(define name" + program[len("(lambda") :]
-
-
 @pytest.mark.parametrize(["program", "params", "body"], VALID)
 def test_lambda_parses(program, params, body):
     result = parse(program)
@@ -95,22 +91,3 @@ def test_invalid_lambda_fails(program):
 def test_invalid_lambda_param_types_fails(program):
     with pytest.raises(TypeSyntaxError):
         parse(program)
-
-
-@pytest.mark.parametrize(["program", "params", "body"], VALID)
-def test_define_parses(program, params, body):
-    result = parse(lambda_to_define(program))
-
-    assert result == Program((nodes.Define(Variable("name"), params, body),))
-
-
-@pytest.mark.parametrize("program", INVALID)
-def test_invalid_define_fails(program):
-    with pytest.raises(SpecialFormSyntaxError, match="(define|function parameter):"):
-        parse(lambda_to_define(program))
-
-
-@pytest.mark.parametrize("program", INVALID_PARAM_TYPES)
-def test_invalid_define_param_types_fails(program):
-    with pytest.raises(TypeSyntaxError):
-        parse(lambda_to_define(program))

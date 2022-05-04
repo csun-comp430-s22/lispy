@@ -46,8 +46,6 @@ class TypeChecker:
                 return self._check_composed_form(form, scope)
             case nodes.Lambda() as lambda_:
                 return self._check_lambda(lambda_, scope)
-            case nodes.Define() as define:
-                return self._check_define(define, scope)
             case nodes.List() as list_:
                 return self._check_list(list_, scope)
             case nodes.Cons() as cons:
@@ -88,11 +86,13 @@ class TypeChecker:
         """
         self._assert_name_valid(variable.name)
 
-        type_ = self.check_form(value, scope)
-        if variable in scope:
-            self._unifier.unify(scope[variable], type_)
+        if variable not in scope:
+            raise exceptions.UnboundNameError(
+                f"Cannot bind to name {variable.name!r}: name is not in scope", variable.name
+            )
 
-        scope[variable] = type_
+        type_ = self.check_form(value, scope)
+        self._unifier.unify(scope[variable], type_)
 
         return type_
 
@@ -130,7 +130,6 @@ class TypeChecker:
         branches_iter = iter(cond.branches)
         first_branch = next(branches_iter)
 
-        # TODO: set/define shouldn't modify the scope if the branch is false.
         first_predicate_type = self.check_form(first_branch.predicate, scope)
         self._unifier.unify(first_predicate_type, BoolType())
 
@@ -160,22 +159,6 @@ class TypeChecker:
         self._unifier.unify(car_type, cdr_element_type)
 
         return expected_cdr_type
-
-    def _check_define(self, define: nodes.Define, scope: Scope) -> Type:
-        """Typecheck a `Define` and return the type of the defined function.
-
-        Raise DuplicateNameError if there is a duplicate name in the function's parameters.
-        """
-        # (define x ...) is really just (set x (lambda ...)).
-        lambda_ = nodes.Lambda(define.parameters, define.body)
-
-        try:
-            return self._bind(define.name, lambda_, scope)
-        except exceptions.DuplicateNameError as e:
-            raise exceptions.DuplicateNameError(
-                f"Invalid syntax for special form define: duplicate parameter name {e.name!r}",
-                e.name,
-            )
 
     def _check_lambda(self, lambda_: nodes.Lambda, scope: Scope) -> FunctionType:
         """Typecheck a `Lambda` and return its type.
@@ -254,7 +237,6 @@ class TypeChecker:
 
     def _check_select(self, select: nodes.Select, scope: Scope) -> Type:
         """Typecheck a `Select` and return its type."""
-        # TODO: set/define shouldn't modify the scope if the branch is false.
         select_value_type = self.check_form(select.value, scope)
         self._unifier.unify(select_value_type, UnknownType())
 
