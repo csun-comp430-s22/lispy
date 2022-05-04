@@ -87,7 +87,7 @@ def test_lambda_parses(program, params, body):
 
 @pytest.mark.parametrize("program", INVALID)
 def test_invalid_lambda_fails(program):
-    with pytest.raises(SpecialFormSyntaxError):
+    with pytest.raises(SpecialFormSyntaxError, match="(lambda|function parameter):"):
         parse(program)
 
 
@@ -106,7 +106,7 @@ def test_define_parses(program, params, body):
 
 @pytest.mark.parametrize("program", INVALID)
 def test_invalid_define_fails(program):
-    with pytest.raises(SpecialFormSyntaxError):
+    with pytest.raises(SpecialFormSyntaxError, match="(define|function parameter):"):
         parse(lambda_to_define(program))
 
 

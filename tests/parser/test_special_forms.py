@@ -116,5 +116,5 @@ def test_ge_2_args_parses(program, args, node):
 @pytest.mark.parametrize("node", [nodes.Progn])
 @pytest.mark.parametrize("program", INVALID_GE_2_ARGS)
 def test_invalid_ge_2_args_fails(program, node):
-    with pytest.raises(SpecialFormSyntaxError):
+    with pytest.raises(SpecialFormSyntaxError, match=f"{node.id}:"):
         parse(program.replace("$", node.id))
