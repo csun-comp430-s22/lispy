@@ -23,7 +23,7 @@ class TypeChecker:
 
     @classmethod
     def check_program(cls, program: Program) -> Iterator[Type]:
-        """Typecheck `program` and yield the set representatives for its body's form's types.
+        """Typecheck `program` and return the set representatives for its body's form's types.
 
         Raise LispyError if a form in the body fails to typecheck.
         """
@@ -31,8 +31,8 @@ class TypeChecker:
         global_scope = {}
 
         types = [checker._check_form(form, global_scope) for form in program.body]
-        for t in types:
-            yield checker._unifier.get_transitive_set_representative(t)
+
+        return (checker._unifier.get_transitive_set_representative(t) for t in types)
 
     def _check_form(self, form: Form, scope: Scope) -> Type:
         """Typecheck a `Form` and return its type."""
