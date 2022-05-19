@@ -246,6 +246,7 @@ class TypeChecker:
         default_type = self._check_form(select.default, scope)
 
         for branch in select.branches:
+            # TODO: should it be the typechecker's responsibility to disallow comparing functions?
             predicate_type = self._check_form(branch.predicate, scope)
             self._unifier.unify(select_value_type, predicate_type)
 
