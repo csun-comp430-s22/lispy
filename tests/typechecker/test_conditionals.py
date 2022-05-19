@@ -1,6 +1,6 @@
 import pytest
 
-from lispyc import nodes
+from lispyc import exceptions, nodes
 from lispyc.parser import parse
 from lispyc.typechecker import TypeChecker
 
@@ -16,6 +16,13 @@ VALID_CONDS = [
     ("(cond (true (select 1 (2 99.9) 82.1)) (false 3e-1) 47.12)", nodes.FloatType()),
 ]
 
+INVALID_CONDS = [
+    "(cond (true 1) (7 2) (false 3) 4)",
+    "(cond (12.3 true) (14.3 true) (9.1 false) true)",
+    "(cond (true 1) (true 9.2) 2)",
+    "(cond (2 6) (false 1) (7.3 true) 8.4)",
+]
+
 
 @pytest.mark.parametrize(["program", "type_"], VALID_CONDS)
 def test_cond_typechecks(program, type_):
@@ -23,3 +30,11 @@ def test_cond_typechecks(program, type_):
     result = list(TypeChecker.check_program(program_node))
 
     assert result == [type_]
+
+
+@pytest.mark.parametrize("program", INVALID_CONDS)
+def test_invalid_cond_type_error(program):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.TypeError):
+        TypeChecker.check_program(program_node)
