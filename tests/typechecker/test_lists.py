@@ -59,6 +59,7 @@ VALID_CARS = [
     ("(car (list (list 7 8) (list 9)))", ListType(nodes.IntType())),
     ("(car (list () (list 1.2 3e-2)))", ListType(nodes.FloatType())),
     ("(car (car (list (list false))))", nodes.BoolType()),
+    ("(car (cdr (list 1.2 3e4)))", nodes.FloatType()),
     ("(car (cons 1 (list 2 3)))", nodes.IntType()),
 ]
 
@@ -68,6 +69,26 @@ INVALID_CARS = [
     "(car false)",
     "(car (car (list 7 8)))",
     "(car (lambda () 1))",
+]
+
+VALID_CDRS = [
+    ("(cdr (list 1 2))", ListType(nodes.IntType())),
+    ("(cdr (list 7.6 1.2 3.4))", ListType(nodes.FloatType())),
+    ("(cdr (list true false true))", ListType(nodes.BoolType())),
+    ("(cdr (list (lambda () 1) (lambda () 2)))", ListType(nodes.FunctionType((), nodes.IntType()))),
+    ("(cdr (list (list 7 8) (list 9)))", ListType(ListType(nodes.IntType()))),
+    ("(cdr (list () (list 1.2 3e-2)))", ListType(ListType(nodes.FloatType()))),
+    ("(cdr (car (list (list false))))", ListType(nodes.BoolType())),
+    ("(cdr (cdr (list (list 7.9) (list -1e2 3.4))))", ListType(ListType(nodes.FloatType()))),
+    ("(cdr (cons 1 (list 2 3)))", ListType(nodes.IntType())),
+]
+
+INVALID_CDRS = [
+    "(cdr 1)",
+    "(cdr -9e2)",
+    "(cdr false)",
+    "(cdr (car (list 1.2 3.4 5.6)))",
+    "(cdr (lambda () 1))",
 ]
 
 
@@ -141,6 +162,22 @@ def test_cars_typechecks(program, type_):
 
 @pytest.mark.parametrize("program", INVALID_CARS)
 def test_invalid_cars_type_error(program):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.TypeError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize(["program", "type_"], VALID_CDRS)
+def test_cdrs_typechecks(program, type_):
+    program_node = parse(program)
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
+
+
+@pytest.mark.parametrize("program", INVALID_CDRS)
+def test_invalid_cdrs_type_error(program):
     program_node = parse(program)
 
     with pytest.raises(exceptions.TypeError):
