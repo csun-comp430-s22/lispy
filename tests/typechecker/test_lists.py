@@ -24,6 +24,33 @@ INVALID_LISTS = [
     "(list (list 1.2 3.4) (list 7.8 9.1) (list (list 3.2) (list 3.3)))",
 ]
 
+VALID_CONS = [
+    ("(cons 1 (list 2))", ListType(nodes.IntType())),
+    ("(cons 3.7 (list 3e-2 5.2))", ListType(nodes.FloatType())),
+    ("(cons false (list true false false true))", ListType(nodes.BoolType())),
+    ("(cons (list 1 2 3) (list (list 4) (list 5 6)))", ListType(ListType(nodes.IntType()))),
+    ("(cons 1 ())", ListType(nodes.IntType())),
+    ("(cons 4.73 ())", ListType(nodes.FloatType())),
+    ("(cons false ())", ListType(nodes.BoolType())),
+    ("(cons (list 7) ())", ListType(ListType(nodes.IntType()))),
+    ("(cons () (list (list false)))", ListType(ListType(nodes.BoolType()))),  # TODO: disallow?
+    (
+        "(cons (cons 1.5 (list 7.9 2.3 7.7)) (list (list 2.2) (list 1.1)))",
+        ListType(ListType(nodes.FloatType())),
+    ),
+    ("(cons 7 (cons 8 (list 9)))", ListType(nodes.IntType())),
+]
+
+INVALID_CONS = [
+    "(cons 1 2)",
+    "(cons 7.9 2.2)",
+    "(cons true false)",
+    "(cons 1 (list 3.4))",
+    "(cons (list false) true)",
+    "(cons (list 1.1) (list 2.3 4.4))",
+    "(cons () (list 12))",
+]
+
 
 @pytest.mark.parametrize("program", ["(list)", "()"])
 def test_nil_typechecks(program):
@@ -57,4 +84,29 @@ def test_invalid_list_type_error(program):
     program_node = parse(program)
 
     with pytest.raises(exceptions.TypeError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize(["program", "type_"], VALID_CONS)
+def test_cons_typechecks(program, type_):
+    program_node = parse(program)
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
+
+
+def test_cons_nil_typechecks():
+    program_node = parse("(cons () ())")  # TODO: should this even be allowed?
+    [result] = list(TypeChecker.check_program(program_node))
+
+    assert isinstance(result, ListType)
+    assert isinstance(result.element_type, ListType)
+    assert isinstance(result.element_type.element_type, nodes.UnknownType)
+
+
+@pytest.mark.parametrize("program", INVALID_CONS)
+def test_invalid_cons_type_error(program):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.UnificationError):
         TypeChecker.check_program(program_node)

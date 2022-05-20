@@ -105,6 +105,7 @@ class TypeChecker:
         element_type = UnknownType()
         expected_type = ListType(element_type)
 
+        # TODO: disallow nil here?
         self._unifier.unify(type_, expected_type)
 
         return element_type
@@ -114,6 +115,7 @@ class TypeChecker:
         type_ = self._check_form(cdr.list, scope)
         expected_type = ListType(UnknownType())
 
+        # TODO: disallow nil here?
         self._unifier.unify(type_, expected_type)
 
         return expected_type
