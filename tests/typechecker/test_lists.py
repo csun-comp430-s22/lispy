@@ -51,6 +51,25 @@ INVALID_CONS = [
     "(cons () (list 12))",
 ]
 
+VALID_CARS = [
+    ("(car (list 1 2))", nodes.IntType()),
+    ("(car (list 7.6 1.2 3.4))", nodes.FloatType()),
+    ("(car (list true false true))", nodes.BoolType()),
+    ("(car (list (lambda () 1) (lambda () 2)))", nodes.FunctionType((), nodes.IntType())),
+    ("(car (list (list 7 8) (list 9)))", ListType(nodes.IntType())),
+    ("(car (list () (list 1.2 3e-2)))", ListType(nodes.FloatType())),
+    ("(car (car (list (list false))))", nodes.BoolType()),
+    ("(car (cons 1 (list 2 3)))", nodes.IntType()),
+]
+
+INVALID_CARS = [
+    "(car 1)",
+    "(car -9e2)",
+    "(car false)",
+    "(car (car (list 7 8)))",
+    "(car (lambda () 1))",
+]
+
 
 @pytest.mark.parametrize("program", ["(list)", "()"])
 def test_nil_typechecks(program):
@@ -109,4 +128,20 @@ def test_invalid_cons_type_error(program):
     program_node = parse(program)
 
     with pytest.raises(exceptions.UnificationError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize(["program", "type_"], VALID_CARS)
+def test_cars_typechecks(program, type_):
+    program_node = parse(program)
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
+
+
+@pytest.mark.parametrize("program", INVALID_CARS)
+def test_invalid_cars_type_error(program):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.TypeError):
         TypeChecker.check_program(program_node)
