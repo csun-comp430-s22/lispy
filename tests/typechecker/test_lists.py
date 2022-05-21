@@ -105,7 +105,7 @@ INVALID_CDRS = [
 
 
 @pytest.mark.parametrize("program", ["(list)", "()"])
-def test_nil_typechecks(program):
+def test_nil_typechecks(program: str):
     program_node = parse(program)
     [result] = list(TypeChecker.check_program(program_node))
 
@@ -124,7 +124,7 @@ def test_nested_nil_typechecks():
 
 
 @pytest.mark.parametrize(["program", "type_"], VALID_LISTS)
-def test_list_typechecks(program, type_):
+def test_list_typechecks(program: str, type_: ListType):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 
@@ -132,7 +132,7 @@ def test_list_typechecks(program, type_):
 
 
 @pytest.mark.parametrize("program", INVALID_LISTS)
-def test_invalid_list_type_error(program):
+def test_invalid_list_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.TypeError):
@@ -140,7 +140,7 @@ def test_invalid_list_type_error(program):
 
 
 @pytest.mark.parametrize(["program", "type_"], VALID_CONS)
-def test_cons_typechecks(program, type_):
+def test_cons_typechecks(program: str, type_: nodes.ListType):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 
@@ -157,7 +157,7 @@ def test_cons_nil_typechecks():
 
 
 @pytest.mark.parametrize("program", INVALID_CONS)
-def test_invalid_cons_type_error(program):
+def test_invalid_cons_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.UnificationError):
@@ -165,7 +165,7 @@ def test_invalid_cons_type_error(program):
 
 
 @pytest.mark.parametrize(["program", "type_"], VALID_CARS)
-def test_cars_typechecks(program, type_):
+def test_cars_typechecks(program: str, type_: nodes.Type):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 
@@ -173,7 +173,7 @@ def test_cars_typechecks(program, type_):
 
 
 @pytest.mark.parametrize("program", INVALID_CARS)
-def test_invalid_cars_type_error(program):
+def test_invalid_cars_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.TypeError):
@@ -181,7 +181,7 @@ def test_invalid_cars_type_error(program):
 
 
 @pytest.mark.parametrize(["program", "type_"], VALID_CDRS)
-def test_cdrs_typechecks(program, type_):
+def test_cdrs_typechecks(program: str, type_: nodes.ListType):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 
@@ -189,7 +189,7 @@ def test_cdrs_typechecks(program, type_):
 
 
 @pytest.mark.parametrize("program", INVALID_CDRS)
-def test_invalid_cdrs_type_error(program):
+def test_invalid_cdrs_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.TypeError):

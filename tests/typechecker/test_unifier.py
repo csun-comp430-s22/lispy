@@ -3,7 +3,7 @@ from itertools import combinations
 import pytest
 
 from lispyc.exceptions import CyclicTypeError, UnificationError
-from lispyc.nodes import BoolType, FloatType, FunctionType, IntType, ListType, UnknownType
+from lispyc.nodes import BoolType, FloatType, FunctionType, IntType, ListType, Type, UnknownType
 from lispyc.typechecker import Unifier
 
 BASIC_TYPES = [IntType, FloatType, BoolType]
@@ -50,26 +50,26 @@ DIFFERENT_PARAM_COUNTS = [
 
 
 @pytest.fixture
-def unifier():
+def unifier() -> Unifier:
     return Unifier()
 
 
-def test_identical_unknowns_unify(unifier):
+def test_identical_unknowns_unify(unifier: Unifier):
     unknown = UnknownType()
 
     unifier.unify(unknown, unknown)
 
-    assert len(unifier._map) == 0
+    assert len(unifier._map) == 0  # pyright: ignore[reportPrivateUsage]
 
 
 @pytest.mark.parametrize("type_", BASIC_TYPES)
-def test_identical_basic_types_unify(unifier, type_):
+def test_identical_basic_types_unify(unifier: Unifier, type_: type[Type]):
     unifier.unify(type_(), type_())
 
-    assert len(unifier._map) == 0
+    assert len(unifier._map) == 0  # pyright: ignore[reportPrivateUsage]
 
 
-def test_unique_unknowns_unify(unifier):
+def test_unique_unknowns_unify(unifier: Unifier):
     unknown_1 = UnknownType()
     unknown_2 = UnknownType()
 
@@ -82,30 +82,30 @@ def test_unique_unknowns_unify(unifier):
     assert (representative_1 is unknown_1) or (representative_2 is unknown_2)
 
 
-def test_identical_lists_unify(unifier):
+def test_identical_lists_unify(unifier: Unifier):
     list_1 = ListType(FloatType())
     list_2 = ListType(FloatType())
 
     unifier.unify(list_1, list_2)
 
-    assert len(unifier._map) == 0
+    assert len(unifier._map) == 0  # pyright: ignore[reportPrivateUsage]
 
 
-def test_identical_functions_unify(unifier):
+def test_identical_functions_unify(unifier: Unifier):
     func_1 = FunctionType((IntType(), BoolType()), FloatType())
     func_2 = FunctionType((IntType(), BoolType()), FloatType())
 
     unifier.unify(func_1, func_2)
 
-    assert len(unifier._map) == 0
+    assert len(unifier._map) == 0  # pyright: ignore[reportPrivateUsage]
 
 
 @pytest.mark.parametrize("type_", BASIC_TYPES)
-def test_transitively_identical_basic_types_unify(unifier, type_):
+def test_transitively_identical_basic_types_unify(unifier: Unifier, type_: type[Type]):
     unifier.unify(type_(), type_())
 
 
-def test_transitively_identical_lists_unify(unifier):
+def test_transitively_identical_lists_unify(unifier: Unifier):
     element_1 = UnknownType()
     element_2 = UnknownType()
     list_unk = UnknownType()
@@ -122,7 +122,7 @@ def test_transitively_identical_lists_unify(unifier):
     assert BoolType() == unifier.get_transitive_set_representative(element_2)
 
 
-def test_transitively_identical_functions_unify(unifier):
+def test_transitively_identical_functions_unify(unifier: Unifier):
     param_1_unk = UnknownType()
     param_2_unk = UnknownType()
     return_unk = UnknownType()
@@ -143,31 +143,33 @@ def test_transitively_identical_functions_unify(unifier):
 
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
-def test_different_basic_types_fail(unifier, left, right):
+def test_different_basic_types_fail(unifier: Unifier, left: type[Type], right: type[Type]):
     with pytest.raises(UnificationError):
         unifier.unify(left(), right())
 
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
-def test_different_lists_fail(unifier, left, right):
+def test_different_lists_fail(unifier: Unifier, left: type[Type], right: type[Type]):
     with pytest.raises(UnificationError):
         unifier.unify(ListType(left()), ListType(right()))
 
 
 @pytest.mark.parametrize(["left", "right"], DIFFERENT_FUNCTION_TYPES)
-def test_different_function_types_fail(unifier, left, right):
+def test_different_function_types_fail(unifier: Unifier, left: FunctionType, right: FunctionType):
     with pytest.raises(UnificationError):
         unifier.unify(left, right)
 
 
 @pytest.mark.parametrize(["left", "right"], DIFFERENT_PARAM_COUNTS)
-def test_different_param_counts_fail(unifier, left, right):
+def test_different_param_counts_fail(unifier: Unifier, left: FunctionType, right: FunctionType):
     with pytest.raises(UnificationError):
         unifier.unify(left, right)
 
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
-def test_transitively_different_basic_types_fail(unifier, left, right):
+def test_transitively_different_basic_types_fail(
+    unifier: Unifier, left: type[Type], right: type[Type]
+):
     left_unk = UnknownType()
     right_unk = UnknownType()
 
@@ -179,7 +181,7 @@ def test_transitively_different_basic_types_fail(unifier, left, right):
 
 
 @pytest.mark.parametrize(["left", "right"], BASIC_TYPE_PAIRS)
-def test_transitively_different_lists_fail(unifier, left, right):
+def test_transitively_different_lists_fail(unifier: Unifier, left: type[Type], right: type[Type]):
     element_1 = UnknownType()
     element_2 = UnknownType()
     list_unk = UnknownType()
@@ -195,7 +197,7 @@ def test_transitively_different_lists_fail(unifier, left, right):
         unifier.unify(list_2, list_unk)
 
 
-def test_transitively_different_function_params_fail(unifier):
+def test_transitively_different_function_params_fail(unifier: Unifier):
     param_1_unk = UnknownType()
     param_2_unk = UnknownType()
     func_1_unk = UnknownType()
@@ -211,7 +213,7 @@ def test_transitively_different_function_params_fail(unifier):
         unifier.unify(func_1_unk, func_2)
 
 
-def test_transitively_different_function_returns_fail(unifier):
+def test_transitively_different_function_returns_fail(unifier: Unifier):
     return_unk = UnknownType()
     func_1_unk = UnknownType()
 
@@ -225,7 +227,7 @@ def test_transitively_different_function_returns_fail(unifier):
         unifier.unify(func_1_unk, func_2)
 
 
-def test_cyclic_list_fails(unifier):
+def test_cyclic_list_fails(unifier: Unifier):
     unknown = UnknownType()
     list_ = ListType(unknown)
 
@@ -233,7 +235,7 @@ def test_cyclic_list_fails(unifier):
         unifier.unify(unknown, list_)
 
 
-def test_cyclic_function_param_fails(unifier):
+def test_cyclic_function_param_fails(unifier: Unifier):
     unknown = UnknownType()
     func = FunctionType((unknown,), BoolType())
 
@@ -241,7 +243,7 @@ def test_cyclic_function_param_fails(unifier):
         unifier.unify(unknown, func)
 
 
-def test_cyclic_function_return_fails(unifier):
+def test_cyclic_function_return_fails(unifier: Unifier):
     unknown = UnknownType()
     func = FunctionType((BoolType(),), unknown)
 

@@ -1,8 +1,7 @@
 import pytest
 
-import nodes
 from lispyc import exceptions
-from lispyc.nodes import BoolType, FloatType, FunctionType, IntType, ListType
+from lispyc.nodes import BoolType, FloatType, FunctionType, IntType, ListType, SpecialForm
 from lispyc.parser import parse
 from lispyc.typechecker import TypeChecker
 
@@ -88,7 +87,7 @@ DUPLICATE_NAME_LAMBDAS = [
 
 
 @pytest.mark.parametrize(["program", "type_"], VALID_LAMBDAS)
-def test_lambda_typechecks(program, type_):
+def test_lambda_typechecks(program: str, type_: FunctionType):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 
@@ -96,7 +95,7 @@ def test_lambda_typechecks(program, type_):
 
 
 @pytest.mark.parametrize("program", INVALID_LAMBDA_BODIES)
-def test_invalid_lambda_body_type_error(program):
+def test_invalid_lambda_body_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.TypeError):
@@ -104,9 +103,9 @@ def test_invalid_lambda_body_type_error(program):
 
 
 @pytest.mark.parametrize("value", VALUES)
-@pytest.mark.parametrize("name", list(nodes.SpecialForm.forms_map.keys()) + ["nil"])
+@pytest.mark.parametrize("name", list(SpecialForm.forms_map.keys()) + ["nil"])
 @pytest.mark.parametrize("program", INVALID_NAME_LAMBDAS)
-def test_lambda_invalid_name_error(program, name, value):
+def test_lambda_invalid_name_error(program: str, name: str, value: str):
     program_node = parse(program.format(name=name, return_val=value))
 
     with pytest.raises(exceptions.InvalidNameError):
@@ -115,7 +114,7 @@ def test_lambda_invalid_name_error(program, name, value):
 
 @pytest.mark.parametrize("value", VALUES)
 @pytest.mark.parametrize("program", DUPLICATE_NAME_LAMBDAS)
-def test_lambda_duplicate_name_error(program, value):
+def test_lambda_duplicate_name_error(program: str, value: str):
     program_node = parse(program.format(return_val=value))
 
     with pytest.raises(exceptions.DuplicateNameError):

@@ -42,7 +42,7 @@ INVALID_SELECTS = [
 
 
 @pytest.mark.parametrize(["program", "type_"], VALID_CONDS)
-def test_cond_typechecks(program, type_):
+def test_cond_typechecks(program: str, type_: nodes.Type):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 
@@ -50,7 +50,7 @@ def test_cond_typechecks(program, type_):
 
 
 @pytest.mark.parametrize("program", INVALID_CONDS)
-def test_invalid_cond_type_error(program):
+def test_invalid_cond_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.UnificationError):
@@ -58,7 +58,7 @@ def test_invalid_cond_type_error(program):
 
 
 @pytest.mark.parametrize(["program", "type_"], VALID_SELECTS)
-def test_select_typechecks(program, type_):
+def test_select_typechecks(program: str, type_: nodes.Type):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 
@@ -66,7 +66,7 @@ def test_select_typechecks(program, type_):
 
 
 @pytest.mark.parametrize("program", INVALID_SELECTS)
-def test_invalid_select_type_error(program):
+def test_invalid_select_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.UnificationError):

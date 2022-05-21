@@ -17,7 +17,7 @@ CONSTANTS = [
 
 
 @pytest.mark.parametrize(["program", "type_"], CONSTANTS)
-def test_constant_typechecks(program, type_):
+def test_constant_typechecks(program: str, type_: nodes.Type):
     program_node = parse(program)
     result = list(TypeChecker.check_program(program_node))
 

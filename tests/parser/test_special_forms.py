@@ -69,7 +69,7 @@ INVALID_GE_2_ARGS = [p for p, _ in VALID_1_ARG] + ["($)", "($ ($ x))", "($ ($ x 
 
 @pytest.mark.parametrize("node", [nodes.List])
 @pytest.mark.parametrize(["program", "args"], VALID_VAR_ARGS)
-def test_var_args_parses(program, args, node):
+def test_var_args_parses(program: str, args: tuple[nodes.Form, ...], node: type[nodes.SpecialForm]):
     result = parse(program.replace("$", node.id))
 
     assert result == Program((node(args),))
@@ -77,7 +77,9 @@ def test_var_args_parses(program, args, node):
 
 @pytest.mark.parametrize("node", [nodes.Cons])
 @pytest.mark.parametrize(["program", "arg1", "arg2"], VALID_2_ARGS)
-def test_2_args_parses(program, arg1, arg2, node):
+def test_2_args_parses(
+    program: str, arg1: nodes.Form, arg2: nodes.Form, node: type[nodes.SpecialForm]
+):
     result = parse(program.replace("$", node.id))
 
     assert result == Program((node(arg1, arg2),))
@@ -85,14 +87,14 @@ def test_2_args_parses(program, arg1, arg2, node):
 
 @pytest.mark.parametrize("node", [nodes.Cons])
 @pytest.mark.parametrize("program", INVALID_2_ARGS)
-def test_invalid_2_args_fails(program, node):
+def test_invalid_2_args_fails(program: str, node: type[nodes.SpecialForm]):
     with pytest.raises(SpecialFormSyntaxError):
         parse(program.replace("$", node.id))
 
 
 @pytest.mark.parametrize("node", [nodes.Car, nodes.Cdr])
 @pytest.mark.parametrize(["program", "arg"], VALID_1_ARG)
-def test_1_arg_parses(program, arg, node):
+def test_1_arg_parses(program: str, arg: nodes.Form, node: type[nodes.SpecialForm]):
     result = parse(program.replace("$", node.id))
 
     assert result == Program((node(arg),))
@@ -100,14 +102,16 @@ def test_1_arg_parses(program, arg, node):
 
 @pytest.mark.parametrize("node", [nodes.Car, nodes.Cdr])
 @pytest.mark.parametrize("program", INVALID_1_ARG)
-def test_invalid_1_arg_fails(program, node):
+def test_invalid_1_arg_fails(program: str, node: type[nodes.SpecialForm]):
     with pytest.raises(SpecialFormSyntaxError):
         parse(program.replace("$", node.id))
 
 
 @pytest.mark.parametrize("node", [nodes.Progn])
 @pytest.mark.parametrize(["program", "args"], VALID_GE_2_ARGS)
-def test_ge_2_args_parses(program, args, node):
+def test_ge_2_args_parses(
+    program: str, args: tuple[nodes.Form, ...], node: type[nodes.SpecialForm]
+):
     result = parse(program.replace("$", node.id))
 
     assert result == Program((node(args),))
@@ -115,6 +119,6 @@ def test_ge_2_args_parses(program, args, node):
 
 @pytest.mark.parametrize("node", [nodes.Progn])
 @pytest.mark.parametrize("program", INVALID_GE_2_ARGS)
-def test_invalid_ge_2_args_fails(program, node):
+def test_invalid_ge_2_args_fails(program: str, node: type[nodes.SpecialForm]):
     with pytest.raises(SpecialFormSyntaxError, match=f"{node.id}:"):
         parse(program.replace("$", node.id))
