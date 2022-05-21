@@ -61,6 +61,61 @@ VALID_LAMBDAS = [
     ),
 ]
 
+VALID_COMPOSED_FORMS = [
+    ("((lambda () 1))", IntType()),
+    ("((lambda () 1.0))", FloatType()),
+    ("((lambda () false))", BoolType()),
+    ("((lambda () (lambda () 1)))", FunctionType((), IntType())),
+    ("((lambda ((x int) (y float) (z bool)) (list 1 2 3)) 1 2.0 false)", ListType(IntType())),
+    (
+        "((lambda ((y float)) (lambda ((z int)) 12)) 1.0)",
+        FunctionType((IntType(),), IntType()),
+    ),
+    (
+        "((lambda ((a int)) (lambda ((a float)) true)) 1)",
+        FunctionType((FloatType(),), BoolType()),
+    ),
+    (
+        "((lambda ((a (list int)) (b (list float)) (c (list bool))) 7e1) "
+        "(list 1 2 3 4 -5) (list 2e-1 3.0) (list false))",
+        FloatType(),
+    ),
+    (
+        "((lambda ((l (list (list int)))) (list false)) (list (list 1) (list 2 3 4)))",
+        ListType(BoolType()),
+    ),
+    (
+        "((lambda ((f (func (int float bool) float))) 1.1) "
+        "(lambda ((a int) (b float) (c bool)) 2.2))",
+        FloatType(),
+    ),
+    (
+        "((lambda ((f (func ((list (list bool))) (list float)))) 1) "
+        "(lambda ((l (list (list bool)))) (list 1.2 3.4)))",
+        IntType(),
+    ),
+    (
+        "((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float))) "
+        "(g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9)))) "
+        "(lambda ((a float)) 9e-1))",
+        FunctionType(
+            (
+                FunctionType((), FunctionType((IntType(),), FloatType())),
+                FunctionType((BoolType(), IntType()), ListType(BoolType())),
+                ListType(IntType()),
+            ),
+            ListType(FunctionType((), FloatType())),
+        ),
+    ),
+    (
+        "(((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float))) "
+        "(g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9)))) "
+        "(lambda ((a float)) 9e-1))"
+        "(lambda () (lambda ((a int)) 1.2)) (lambda ((a bool) (b int)) (list true)) (list 1 2 3))",
+        ListType(FunctionType((), FloatType())),
+    ),
+]
+
 VALUES = ["1", "1e-2", "false", "(list 1 2 3)", "(lambda ((j int) (k float)) 13)"]
 
 INVALID_LAMBDA_BODIES = [
@@ -83,6 +138,73 @@ DUPLICATE_NAME_LAMBDAS = [
     "(lambda ((z_Y int) (z_Y float)) {return_val})",
     "(lambda ((j int) (j float)) {return_val})",
     "(lambda () (lambda ((b float) (b int)) {return_val}))",
+]
+
+MISSING_ARGS_COMPOSED_FORMS = [
+    "((lambda ((x int) (y float) (z bool)) (list 1 2 3)) 1 2.3)",
+    "((lambda ((f (func (int float bool) float))) 1.1))",
+    "((lambda ((f (func ((list (list bool))) (list float)))) 1))",
+    """
+    (((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float)))
+    (g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9)))))
+    (lambda () (lambda ((a int)) 1.2)) (lambda ((a bool) (b int)) (list true)) (list 1 2))
+    """,
+    """
+    (((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float)))
+    (g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9))))
+    (lambda ((a float)) 9e-1))
+    (lambda () (lambda ((a int)) 1.2)) (lambda ((a bool) (b int)) (list true)))
+    """,
+    """
+    (((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float)))
+    (g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9))))
+    (lambda ((a float)) 9e-1))
+    (lambda () (lambda ((a int)) 1.2)) (list 1 2))
+    """,
+]
+
+MANY_ARGS_COMPOSED_FORMS = [
+    "((lambda () 1) 1 2 3 4 5)",
+    "((lambda () false) true)",
+    "((lambda ((x int) (y float) (z bool)) (list 1 2 3)) 1 2.3 true 2 4.5 false)",
+    """
+    (((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float)))
+    (g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9))))
+    (lambda ((a float)) 9e-1) (lambda () (lambda ((b int)) 9.9)))
+    (lambda () (lambda ((a int)) 1.2)) (lambda ((a bool) (b int)) (list true)) (list 1 2 3))
+    """,
+    """
+    (((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float)))
+    (g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9))))
+    (lambda ((a float)) 9e-1))
+    (lambda () (lambda ((a int)) 1.2)) (lambda ((a bool) (b int)) (list true)) (list 1 2) (list 3))
+    """,
+]
+
+INVALID_ARGS_COMPOSED_FORMS = [
+    "((lambda ((a int)) true) false)",
+    "((lambda ((b float)) 1) 2)",
+    "((lambda ((c bool)) 1.0) 2.0)",
+    "((lambda ((x int) (y float) (z bool)) (list 1 2 3)) 1 2.3 3)",
+    "((lambda ((a float) (b int) (c bool)) true) 1.0 2.0 false)",
+    "((lambda ((a int) (b bool) (c float)) true) 1.0 true 2.0)",
+    "((lambda ((x int) (y float) (z bool)) (list 1 2 3)) 1.0 false 2)",
+    "((lambda ((f (func (float bool) int))) 1) (lambda ((a float) (b int)) 1))",
+    "((lambda ((f (func (float bool) int))) 1) (lambda ((a int) (b bool)) 1))",
+    "((lambda ((f (func (float bool) int))) 1) (lambda ((a bool) (b float)) 1))",
+    "((lambda ((f (func (float bool) int))) 1) (lambda ((a float) (b bool)) 1.0))",
+    """
+    (((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float)))
+    (g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9))))
+    (lambda ((a float)) 9e-1))
+    (lambda () (lambda ((a int)) 1.2)) (lambda ((a bool) (b int)) (list true)) (list 1.1 2.2))
+    """,
+    """
+    (((lambda ((g (func (float) float))) (lambda ((f (func () (func (int) float)))
+    (g (func (bool int) (list bool))) (l (list int))) (list (lambda () 7.9))))
+    (lambda ((a float) (b int)) 9e-1))
+    (lambda () (lambda ((a int)) 1.2)) (lambda ((a bool) (b int)) (list true)) (list 1 2 3))
+    """,
 ]
 
 
@@ -118,4 +240,28 @@ def test_lambda_duplicate_name_error(program: str, value: str):
     program_node = parse(program.format(return_val=value))
 
     with pytest.raises(exceptions.DuplicateNameError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize("program", MISSING_ARGS_COMPOSED_FORMS)
+def test_composed_form_missing_args_type_error(program: str):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.TypeError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize("program", MANY_ARGS_COMPOSED_FORMS)
+def test_composed_form_many_args_type_error(program: str):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.TypeError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize("program", INVALID_ARGS_COMPOSED_FORMS)
+def test_composed_form_invalid_args_type_error(program: str):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.TypeError):
         TypeChecker.check_program(program_node)
