@@ -56,6 +56,19 @@ INVALID_VALUE_SETS = [
     "(lambda ((a int)) (progn (lambda ((a bool)) a) (set a false)))",
 ]
 
+UNBOUND_NAME_REFERENCES = [
+    "a",
+    "(list x)",
+    "(list 1 x 2)",
+    "(progn x y z)",
+    "(lambda ((a int)) b)",
+    "(lambda ((a int)) a) b",
+    "(let ((a 1)) b)",
+    "(let ((a 1)) b (let ((b 2)) b))",
+    "(let ((a 1)) (let ((b 2)) b) b)",
+    "(let ((a (let ((b 2)) b))) b)",
+]
+
 
 def test_let_set_typechecks():
     program = """
@@ -121,4 +134,12 @@ def test_set_invalid_value_type_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.UnificationError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize("program", UNBOUND_NAME_REFERENCES)
+def test_reference_unbound_name_error(program: str):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.UnboundNameError):
         TypeChecker.check_program(program_node)
