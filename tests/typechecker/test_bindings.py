@@ -1,11 +1,38 @@
 import pytest
 
 from lispyc import exceptions
-from lispyc.nodes import FloatType, ListType, SpecialForm
+from lispyc.nodes import BoolType, FloatType, FunctionType, IntType, ListType, SpecialForm, Type
 from lispyc.parser import parse
 from lispyc.typechecker import TypeChecker
 
 VALUES = ["1", "1e-2", "false", "(list 1 2 3)", "(lambda ((j int) (k float)) 13)"]
+
+VALID_SETS = [
+    ("(let ((a 1)) (set a 2))", IntType()),
+    ("(let ((a 1.0)) (set a 2.0))", FloatType()),
+    ("(let ((a false)) (set a true))", BoolType()),
+    ("(let ((a (list 1))) (set a (list 1 2 3)))", ListType(IntType())),
+    (
+        "(let ((a (lambda ((x int) (y float)) 1))) (set a (lambda ((j int) (k float)) 13)))",
+        FunctionType((IntType(), FloatType()), IntType()),
+    ),
+    ("(let ((a 1.0)) (set a (set a 2.0)))", FloatType()),
+    ("(let ((a 1) (b 5)) (set b (set a 3)))", IntType()),
+    ("(let ((a nil)) (set a (list 1 2)) a)", ListType(IntType())),
+    ("(lambda ((x int)) (set x 2))", FunctionType((IntType(),), IntType())),
+    ("(lambda ((x float)) (set x 2.0))", FunctionType((FloatType(),), FloatType())),
+    ("(lambda ((x bool)) (set x false))", FunctionType((BoolType(),), BoolType())),
+    (
+        "(lambda ((x (list int))) (set x (list 1)))",
+        FunctionType((ListType(IntType()),), ListType(IntType())),
+    ),
+    (
+        "(lambda ((x (func (int) float))) (set x (lambda ((j int)) 2.0)))",
+        FunctionType(
+            (FunctionType((IntType(),), FloatType()),), FunctionType((IntType(),), FloatType())
+        ),
+    ),
+]
 
 INVALID_NAME_LETS = [
     "(let (({name} 1.0)) {return_val})",
@@ -83,6 +110,15 @@ PREMATURE_REFERENCE_LETS = [
     "(let ((a b) (b false)) nil)",
     "(let ((a 1) (b (let ((c a)) nil))) nil)",
 ]
+
+
+@pytest.mark.parametrize(["program", "type_"], VALID_SETS)
+def test_set_typechecks(program: str, type_: Type):
+    program_node = parse(program)
+
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
 
 
 def test_let_set_typechecks():
