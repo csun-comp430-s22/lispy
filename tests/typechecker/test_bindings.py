@@ -71,6 +71,29 @@ SCOPE_TEST_SETS = [
     ),
 ]
 
+SHADOWING = [
+    (
+        "(lambda ((a int) (b float)) (lambda ((a bool)) a))",
+        FunctionType((IntType(), FloatType()), FunctionType((BoolType(),), BoolType())),
+    ),
+    (
+        "(lambda ((a int) (b float)) (progn (lambda ((a bool)) a) b a))",
+        FunctionType((IntType(), FloatType()), IntType()),
+    ),
+    (
+        "(lambda ((a int) (b float)) (let ((a false)) a))",
+        FunctionType((IntType(), FloatType()), BoolType()),
+    ),
+    (
+        "(lambda ((a int) (b float)) (progn (let ((a false)) a) b a))",
+        FunctionType((IntType(), FloatType()), IntType()),
+    ),
+    ("(let ((a 1) (b 2.0)) (let ((a true)) a))", BoolType()),
+    ("(let ((a 1) (b 2.0)) (let ((a true)) a) a)", IntType()),
+    ("(let ((a 1) (b 2.0)) (lambda ((a bool)) a))", FunctionType((BoolType(),), BoolType())),
+    ("(let ((a 1) (b 2.0)) (lambda ((a bool)) a) a)", IntType()),
+]
+
 INVALID_NAME_LETS = [
     "(let (({name} 1.0)) {return_val})",
     "(let (({name} (list 1))) {return_val})",
@@ -185,7 +208,16 @@ def test_set_other_names_remain_in_scope(program: str, type_: Type):
     assert result == [type_]
 
 
-def test_let_set_typechecks():
+@pytest.mark.parametrize(["program", "type_"], SHADOWING)
+def test_set_shadowing(program: str, type_: Type):
+    program_node = parse(program)
+
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
+
+
+def test_complex_let_set_typechecks():
     program = """
     (let
         (
