@@ -69,6 +69,15 @@ UNBOUND_NAME_REFERENCES = [
     "(let ((a (let ((b 2)) b))) b)",
 ]
 
+SPECIAL_FORM_NAME_REFERENCES = [
+    "{name}",
+    "(list {name})",
+    "(let ((a {name})) a)",
+    "(let ((a (lambda () nil))) (set a {name}))",
+    "(lambda ((f (func () int))) (set f {name}))",
+    "((lambda ((f (func () int))) (f)) {name})",
+]
+
 PREMATURE_REFERENCE_LETS = [
     "(let ((a 1) (b a)) nil)",
     "(let ((a b) (b false)) nil)",
@@ -148,6 +157,15 @@ def test_reference_unbound_name_error(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.UnboundNameError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize("name", SpecialForm.forms_map.keys())
+@pytest.mark.parametrize("program", SPECIAL_FORM_NAME_REFERENCES)
+def test_special_form_reference_syntax_error(program: str, name: str):
+    program_node = parse(program.format(name=name))
+
+    with pytest.raises(exceptions.SpecialFormSyntaxError):
         TypeChecker.check_program(program_node)
 
 
