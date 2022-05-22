@@ -1,14 +1,13 @@
 import copy
-from collections.abc import Iterable, MutableMapping
+from collections.abc import Iterable, Iterator, MutableMapping
 
 from lispyc import exceptions, nodes
-from lispyc.nodes import ComposedForm, Constant, Form, Program, SpecialForm, Variable
-from lispyc.nodes.types import BoolType, FloatType, FunctionType, IntType, ListType
+from lispyc.nodes import ComposedForm, Constant, Form, Program, SpecialForm, Type, Variable
+from lispyc.nodes.types import BoolType, FloatType, FunctionType, IntType, ListType, UnknownType
 
-from .types import Type, UnknownType
 from .unifier import Unifier
 
-__all__ = ("TypeChecker",)
+__all__ = ("TypeChecker", "NIL")
 
 Scope = MutableMapping[Variable, Type]
 
@@ -23,15 +22,19 @@ class TypeChecker:
         self._unifier = Unifier()
 
     @classmethod
-    def assert_program_valid(cls, program: Program) -> None:
-        """Typecheck `program` and raise LispyError if it fails."""
+    def check_program(cls, program: Program) -> Iterator[Type]:
+        """Typecheck `program` and return the set representatives for its body's form's types.
+
+        Raise LispyError if a form in the body fails to typecheck.
+        """
         checker = cls(program)
         global_scope = {}
 
-        for form in program.body:
-            checker.check_form(form, global_scope)
+        types = [checker._check_form(form, global_scope) for form in program.body]
 
-    def check_form(self, form: Form, scope: Scope) -> Type:
+        return (checker._unifier.get_transitive_set_representative(t) for t in types)
+
+    def _check_form(self, form: Form, scope: Scope) -> Type:
         """Typecheck a `Form` and return its type."""
         match form:
             case Constant(bool()):
@@ -80,7 +83,7 @@ class TypeChecker:
             )
 
     def _bind(self, variable: Variable, value: Form, scope: Scope) -> Type:
-        """Bind or rebind a variable in the given `scope` and return the type of its new value.
+        """Rebind a variable in the given `scope` and return the type of its new value.
 
         The variable's name must not be the name of a special form or "nil".
         """
@@ -91,35 +94,37 @@ class TypeChecker:
                 f"Cannot bind to name {variable.name!r}: name is not in scope", variable.name
             )
 
-        type_ = self.check_form(value, scope)
+        type_ = self._check_form(value, scope)
         self._unifier.unify(scope[variable], type_)
 
         return type_
 
     def _check_car(self, car: nodes.Car, scope: Scope) -> Type:
         """Typecheck a `Car` and return the type of the list element it returns."""
-        type_ = self.check_form(car.list, scope)
+        type_ = self._check_form(car.list, scope)
         element_type = UnknownType()
         expected_type = ListType(element_type)
 
+        # TODO: disallow nil here?
         self._unifier.unify(type_, expected_type)
 
         return element_type
 
     def _check_cdr(self, cdr: nodes.Cdr, scope: Scope) -> ListType:
         """Typecheck a `Cdr` and return the type of the list it returns."""
-        type_ = self.check_form(cdr.list, scope)
+        type_ = self._check_form(cdr.list, scope)
         expected_type = ListType(UnknownType())
 
+        # TODO: disallow nil here?
         self._unifier.unify(type_, expected_type)
 
         return expected_type
 
     def _check_composed_form(self, form: ComposedForm, scope: Scope) -> Type:
         """Typecheck a `ComposedForm` and return the called function's return type."""
-        param_types = tuple(self.check_form(arg, scope) for arg in form.arguments)
+        param_types = tuple(self._check_form(arg, scope) for arg in form.arguments)
         expected_type = FunctionType(param_types, UnknownType())
-        current_type = self.check_form(form.name, scope)
+        current_type = self._check_form(form.name, scope)
 
         self._unifier.unify(current_type, expected_type)
 
@@ -130,27 +135,27 @@ class TypeChecker:
         branches_iter = iter(cond.branches)
         first_branch = next(branches_iter)
 
-        first_predicate_type = self.check_form(first_branch.predicate, scope)
+        first_predicate_type = self._check_form(first_branch.predicate, scope)
         self._unifier.unify(first_predicate_type, BoolType())
 
-        first_value_type = self.check_form(first_branch.value, scope)
+        first_value_type = self._check_form(first_branch.value, scope)
 
         for branch in branches_iter:
-            predicate_type = self.check_form(branch.predicate, scope)
+            predicate_type = self._check_form(branch.predicate, scope)
             self._unifier.unify(first_predicate_type, predicate_type)
 
-            value_type = self.check_form(branch.value, scope)
+            value_type = self._check_form(branch.value, scope)
             self._unifier.unify(first_value_type, value_type)
 
-        default_type = self.check_form(cond.default, scope)
+        default_type = self._check_form(cond.default, scope)
         self._unifier.unify(first_value_type, default_type)
 
         return default_type
 
     def _check_cons(self, cons: nodes.Cons, scope: Scope) -> ListType:
         """Typecheck a `Cons` and return the type of the list it returns."""
-        car_type = self.check_form(cons.car, scope)
-        cdr_type = self.check_form(cons.cdr, scope)
+        car_type = self._check_form(cons.car, scope)
+        cdr_type = self._check_form(cons.cdr, scope)
 
         cdr_element_type = UnknownType()
         expected_cdr_type = ListType(cdr_element_type)
@@ -174,7 +179,7 @@ class TypeChecker:
             )
 
         param_types = tuple(param.type for param in lambda_.parameters)
-        return_type = self.check_form(lambda_.body, func_scope)
+        return_type = self._check_form(lambda_.body, func_scope)
 
         return FunctionType(param_types, return_type)
 
@@ -183,7 +188,7 @@ class TypeChecker:
         # Create FunctionParameters because it's a convenient data structure for storing pairs
         # of variables and types, which is what _create_scope() needs.
         params = [
-            nodes.FunctionParameter(b.name, self.check_form(b.value, scope)) for b in let.bindings
+            nodes.FunctionParameter(b.name, self._check_form(b.value, scope)) for b in let.bindings
         ]
 
         try:
@@ -208,11 +213,11 @@ class TypeChecker:
 
         # Get the type of the first element.
         elements_iter = iter(list_.elements)
-        first_type = self.check_form(next(elements_iter), scope)
+        first_type = self._check_form(next(elements_iter), scope)
 
         # Unify all elements - the list must be homogeneous.
         for i, element in enumerate(elements_iter, 1):
-            current_type = self.check_form(element, scope)
+            current_type = self._check_form(element, scope)
 
             try:
                 self._unifier.unify(first_type, current_type)
@@ -228,7 +233,7 @@ class TypeChecker:
         """Typecheck a `Progn` and return the type of its last form."""
         type_ = None
         for form in progn.forms:
-            type_ = self.check_form(form, scope)
+            type_ = self._check_form(form, scope)
 
         # TODO: In practice the parser requires > 0 forms for Progn and Let, but I'm still scared.
         assert type_ is not None
@@ -237,16 +242,17 @@ class TypeChecker:
 
     def _check_select(self, select: nodes.Select, scope: Scope) -> Type:
         """Typecheck a `Select` and return its type."""
-        select_value_type = self.check_form(select.value, scope)
+        select_value_type = self._check_form(select.value, scope)
         self._unifier.unify(select_value_type, UnknownType())
 
-        default_type = self.check_form(select.default, scope)
+        default_type = self._check_form(select.default, scope)
 
         for branch in select.branches:
-            predicate_type = self.check_form(branch.predicate, scope)
+            # TODO: should it be the typechecker's responsibility to disallow comparing functions?
+            predicate_type = self._check_form(branch.predicate, scope)
             self._unifier.unify(select_value_type, predicate_type)
 
-            value_type = self.check_form(branch.value, scope)
+            value_type = self._check_form(branch.value, scope)
             self._unifier.unify(default_type, value_type)
 
         return default_type
@@ -277,8 +283,14 @@ class TypeChecker:
         """Get the type of the value bound to the given `variable` in the given `scope`.
 
         Raise UnboundNameError if the name is not in scope.
+        Raise SpecialFormSyntaxError if the name is that of a special form.
         """
-        if variable.name == NIL:
+        if variable.name in SpecialForm.forms_map:
+            raise exceptions.SpecialFormSyntaxError(
+                f"Invalid syntax for special form {variable.name!r}: "
+                f"a special form's name cannot be used as a reference to a binding"
+            )
+        elif variable.name == NIL:
             # nil is a special case that's always in scope.
             # Just like in _check_list, each reference to nil must return a new instance of the type
             # to prevent nils referenced in different scopes from unifying with each other.

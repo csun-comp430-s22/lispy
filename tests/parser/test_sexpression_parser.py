@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import math
 import random
 import string
+from typing import Any, Union
 
 import pytest
 from lark.exceptions import UnexpectedCharacters, UnexpectedInput
@@ -8,6 +11,8 @@ from lark.exceptions import UnexpectedCharacters, UnexpectedInput
 from lispyc.sexpression import nodes, parser
 
 random.seed(1)
+
+List = list[Union[int, float, bool, str, "List"]]
 
 CONSTANT_PARAMS = [
     ("true", True),
@@ -58,7 +63,7 @@ INVALID_ATOM_PARAMS = [
     *[f"my{c}atom" for c in string.punctuation if c not in {"(", ")", "_", "$"}],
 ]
 
-LIST_PARAMS = [
+LIST_PARAMS: list[tuple[str, list[int | float | bool | str]]] = [
     ("$($+1$)$", [1]),
     ("$($-2.4$)$", [-2.4]),
     ("$($true$)$", [True]),
@@ -71,7 +76,7 @@ LIST_PARAMS = [
     ("$($)$", []),
 ]
 
-LIST_NESTED_PARAMS = [
+LIST_NESTED_PARAMS: list[tuple[str, List]] = [
     ("$($a$($b $c$)$)$", [["a", ["b", "c"]]]),
     ("$($($a $b$)$($1$)$2$)$($($)$)$", [[["a", "b"], [1], 2], [[]]]),
     (
@@ -84,7 +89,7 @@ LIST_NESTED_PARAMS = [
     ),
 ]
 
-PROGRAM_SIMPLE_PARAMS = [
+PROGRAM_SIMPLE_PARAMS: list[tuple[str, list[int | list[Any]]]] = [
     ("$($)$1$($)$", [[], 1, []]),
     ("$1$($)$1$", [1, [], 1]),
     ("$1$($)$", [1, []]),
@@ -95,7 +100,7 @@ PROGRAM_SIMPLE_PARAMS = [
     ("$($)$1$ $1$", [[], 1, 1]),
 ]
 
-PROGRAM_PARAMS = [
+PROGRAM_PARAMS: list[tuple[str, List]] = [
     (
         "$($atom$ $-23$ $true$)$ $($2e-7$ $x$ $false$)$ $($)$ $($)$ $($x$)$",
         [["atom", -23, True], [2e-7, "x", False], [], [], ["x"]],
@@ -147,14 +152,14 @@ def inject_random_ws(program: str, placeholder: str) -> str:
 
 
 @pytest.mark.parametrize(["program", "value"], CONSTANT_PARAMS)
-def test_constant(program, value):
+def test_constant(program: str, value: int | float | bool):
     ast = parser.parse(program)
 
     assert ast == [value]
 
 
 @pytest.mark.parametrize(["program", "value"], CONSTANT_PARAMS)
-def test_constant_ws(program, value):
+def test_constant_ws(program: str, value: int | float | bool):
     program = inject_random_ws(f"${program}$", "$")
 
     ast = parser.parse(program)
@@ -163,24 +168,25 @@ def test_constant_ws(program, value):
 
 
 @pytest.mark.parametrize("program", ["nan", "+nan", "-nan"])
-def test_nan(program):
+def test_nan(program: str):
     ast = parser.parse(program)
 
     assert len(ast.body) == 1
     atom = ast.body[0]
     assert isinstance(atom, nodes.Atom)
+    assert isinstance(atom.value, float)
     assert math.isnan(atom.value)
 
 
 @pytest.mark.parametrize("program", ATOMIC_LITERAL_PARAMS)
-def test_atomic_literal(program):
+def test_atomic_literal(program: str):
     ast = parser.parse(program)
 
     assert ast == [program]
 
 
 @pytest.mark.parametrize("program", ATOMIC_LITERAL_PARAMS)
-def test_atomic_literal_ws(program):
+def test_atomic_literal_ws(program: str):
     program_in = inject_random_ws(f"${program}$", "$")
 
     ast = parser.parse(program_in)
@@ -189,13 +195,13 @@ def test_atomic_literal_ws(program):
 
 
 @pytest.mark.parametrize("program", INVALID_ATOM_PARAMS + ["my$atom"])
-def test_invalid_atom(program):
+def test_invalid_atom(program: str):
     with pytest.raises(UnexpectedCharacters):
         parser.parse(program)
 
 
 @pytest.mark.parametrize("program", INVALID_ATOM_PARAMS)
-def test_invalid_atom_ws(program):
+def test_invalid_atom_ws(program: str):
     program = inject_random_ws(f"${program}$", "$")
 
     with pytest.raises(UnexpectedCharacters):
@@ -203,13 +209,13 @@ def test_invalid_atom_ws(program):
 
 
 @pytest.mark.parametrize("program", ["1e", "()1e()", "(a b) 4dd", "77x (2 y)", "(5j)"])
-def test_consecutive_atoms_require_whitespace(program):
+def test_consecutive_atoms_require_whitespace(program: str):
     with pytest.raises(UnexpectedCharacters):
         parser.parse(program)
 
 
 @pytest.mark.parametrize(["program", "value"], LIST_PARAMS)
-def test_list(program, value):
+def test_list(program: str, value: List):
     program = program.replace("$", "")
 
     ast = parser.parse(program)
@@ -218,7 +224,7 @@ def test_list(program, value):
 
 
 @pytest.mark.parametrize(["program", "value"], LIST_PARAMS)
-def test_list_ws(program, value):
+def test_list_ws(program: str, value: List):
     program = inject_random_ws(program, "$")
 
     ast = parser.parse(program)
@@ -227,7 +233,7 @@ def test_list_ws(program, value):
 
 
 @pytest.mark.parametrize(["program", "value"], PROGRAM_SIMPLE_PARAMS)
-def test_program_simple(program, value):
+def test_program_simple(program: str, value: List):
     program = program.replace("$", "")
 
     ast = parser.parse(program)
@@ -236,7 +242,7 @@ def test_program_simple(program, value):
 
 
 @pytest.mark.parametrize(["program", "value"], PROGRAM_SIMPLE_PARAMS)
-def test_program_simple_ws(program, value):
+def test_program_simple_ws(program: str, value: List):
     program = inject_random_ws(program, "$")
 
     ast = parser.parse(program)
@@ -245,7 +251,7 @@ def test_program_simple_ws(program, value):
 
 
 @pytest.mark.parametrize(["program", "value"], PROGRAM_PARAMS)
-def test_program(program, value):
+def test_program(program: str, value: List):
     program = program.replace("$", "")
 
     ast = parser.parse(program)
@@ -254,7 +260,7 @@ def test_program(program, value):
 
 
 @pytest.mark.parametrize(["program", "value"], PROGRAM_PARAMS)
-def test_program_ws(program, value):
+def test_program_ws(program: str, value: List):
     program = inject_random_ws(program, "$")
 
     ast = parser.parse(program)
@@ -263,14 +269,14 @@ def test_program_ws(program, value):
 
 
 @pytest.mark.parametrize("program", ["", inject_random_ws("$", "$")])
-def test_program_empty(program):
+def test_program_empty(program: str):
     ast = parser.parse(program)
 
     assert ast == []
 
 
 @pytest.mark.parametrize(["program", "value"], LIST_NESTED_PARAMS)
-def test_nested_lists(program, value):
+def test_nested_lists(program: str, value: List):
     program = program.replace("$", "")
 
     ast = parser.parse(program)
@@ -279,7 +285,7 @@ def test_nested_lists(program, value):
 
 
 @pytest.mark.parametrize(["program", "value"], LIST_NESTED_PARAMS)
-def test_nested_lists_ws(program, value):
+def test_nested_lists_ws(program: str, value: List):
     program = inject_random_ws(program, "$")
 
     ast = parser.parse(program)
@@ -288,7 +294,7 @@ def test_nested_lists_ws(program, value):
 
 
 @pytest.mark.parametrize("program", MISSING_PAREN_PARAMS)
-def test_missing_parenthesis(program):
+def test_missing_parenthesis(program: str):
     program = program.replace("$", "")
 
     with pytest.raises(UnexpectedInput):
@@ -296,7 +302,7 @@ def test_missing_parenthesis(program):
 
 
 @pytest.mark.parametrize("program", MISSING_PAREN_PARAMS)
-def test_missing_parenthesis_ws(program):
+def test_missing_parenthesis_ws(program: str):
     program = inject_random_ws(program, "$")
 
     with pytest.raises(UnexpectedInput):

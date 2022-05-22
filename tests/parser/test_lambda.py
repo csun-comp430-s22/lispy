@@ -75,19 +75,19 @@ INVALID_PARAM_TYPES = [
 
 
 @pytest.mark.parametrize(["program", "params", "body"], VALID)
-def test_lambda_parses(program, params, body):
+def test_lambda_parses(program: str, params: tuple[Param, ...], body: nodes.Form):
     result = parse(program)
 
     assert result == Program((nodes.Lambda(params, body),))
 
 
 @pytest.mark.parametrize("program", INVALID)
-def test_invalid_lambda_fails(program):
+def test_invalid_lambda_fails(program: str):
     with pytest.raises(SpecialFormSyntaxError, match="(lambda|function parameter):"):
         parse(program)
 
 
 @pytest.mark.parametrize("program", INVALID_PARAM_TYPES)
-def test_invalid_lambda_param_types_fails(program):
+def test_invalid_lambda_param_types_fails(program: str):
     with pytest.raises(TypeSyntaxError):
         parse(program)

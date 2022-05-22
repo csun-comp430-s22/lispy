@@ -1,4 +1,4 @@
-from lispyc.nodes import ComposedForm, Constant, List, Variable
+from lispyc.nodes import ComposedForm, Constant, Form, List, Variable
 
 __all__ = (
     "FORM_PROGRAMS",
@@ -24,7 +24,7 @@ FORM_PROGRAMS = [
     "(x y 1)",
 ]
 
-FORM_NODES = [
+FORM_NODES: list[Form] = [
     List(()),
     ComposedForm(Variable("a"), ()),
     ComposedForm(Constant(1), ()),
@@ -50,7 +50,7 @@ MULTIPLE_FORM_PROGRAMS = [
     "(x a) nil ()",
 ]
 
-MULTIPLE_FORM_NODES = [
+MULTIPLE_FORM_NODES: list[tuple[Form, ...]] = [
     (Constant(1), Constant(2)),
     (Variable("a"), Variable("b"), Variable("c")),
     (Constant(False), ComposedForm(Variable("x"), (Variable("a"), Variable("b")))),

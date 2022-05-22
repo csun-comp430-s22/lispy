@@ -84,14 +84,14 @@ INVALID_MULTIPLE_PROGRAMS = [
 
 
 @pytest.mark.parametrize("program", ["x", "y1", "z_A", "C", "nil", "not", "float"])
-def test_variable_parses(program):
+def test_variable_parses(program: str):
     result = parse(program)
 
     assert result == Program((Variable(program),))
 
 
 @pytest.mark.parametrize(["program", "value"], CONSTANT_PARAMS)
-def test_constant_parses(program, value):
+def test_constant_parses(program: str, value: int | float | bool):
     result = parse(program)
 
     assert result == Program((Constant(value),))
@@ -104,20 +104,20 @@ def test_empty_list_parses():
 
 
 @pytest.mark.parametrize(["program", "name", "args"], COMPOSED_FORM_PARAMS)
-def test_composed_form_parses(program, name, args):
+def test_composed_form_parses(program: str, name: Variable, args: tuple[nodes.Form, ...]):
     result = parse(program)
 
     assert result == Program((ComposedForm(name, args),))
 
 
 @pytest.mark.parametrize(["program", "nodes_"], MULTIPLE_PROGRAMS)
-def test_multiple_programs_parses(program, nodes_):
+def test_multiple_programs_parses(program: str, nodes_: tuple[nodes.Form, ...]):
     result = parse(program)
 
     assert result == Program(nodes_)
 
 
 @pytest.mark.parametrize("program", INVALID_MULTIPLE_PROGRAMS)
-def test_multiple_programs_propagates_failures(program):
+def test_multiple_programs_propagates_failures(program: str):
     with pytest.raises(exceptions.SyntaxError):
         parse(program)

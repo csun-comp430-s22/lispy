@@ -9,7 +9,7 @@ skip_gitignore = true
 src_paths = ["lispyc"]
 
 [tool.pyright]
-include = ["lispyc"]
+include = ["lispyc", "tests"]
 
 pythonPlatform = "All"
 typeCheckingMode = "strict"

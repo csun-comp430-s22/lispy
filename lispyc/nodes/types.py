@@ -1,38 +1,45 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
-from lispyc.typechecker.types import Type
+from .base import Type
 
-from .base import TypeNode
-
-__all__ = ("IntType", "FloatType", "BoolType", "ListType", "FunctionType")
+__all__ = ("IntType", "FloatType", "BoolType", "ListType", "FunctionType", "UnknownType")
 
 
 @dataclass(frozen=True, slots=True)
-class IntType(TypeNode):
+class IntType(Type):
     """An integer type."""
 
 
 @dataclass(frozen=True, slots=True)
-class FloatType(TypeNode):
+class FloatType(Type):
     """A floating-point number type."""
 
 
 @dataclass(frozen=True, slots=True)
-class BoolType(TypeNode):
+class BoolType(Type):
     """A Boolean type (true or false)."""
 
 
 @dataclass(frozen=True, slots=True)
-class ListType(TypeNode):
+class ListType(Type):
     """A generic list type."""
 
     element_type: Type
 
 
 @dataclass(frozen=True, slots=True)
-class FunctionType(TypeNode):
+class FunctionType(Type):
     """A function type."""
 
     parameter_types: Sequence[Type]
     return_type: Type
+
+
+@dataclass(frozen=True, slots=True)
+class UnknownType(Type):
+    """A type which is currently unknown; a placeholder."""
+
+    def __eq__(self, other: Any) -> bool:
+        return self is other

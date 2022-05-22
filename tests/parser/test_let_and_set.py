@@ -1,7 +1,7 @@
 import pytest
 
 from lispyc.exceptions import SpecialFormSyntaxError
-from lispyc.nodes import ComposedForm, Constant, Let, LetBinding, List, Program, Set, Variable
+from lispyc.nodes import ComposedForm, Constant, Form, Let, LetBinding, List, Program, Set, Variable
 from lispyc.parser import parse
 
 from .data import FORM_PROGRAMS, FORMS, MULTIPLE_FORM_PROGRAMS, MULTIPLE_FORMS
@@ -68,7 +68,7 @@ LET_WITH_INVALID_BINDINGS = [
 
 
 @pytest.mark.parametrize(["program", "form"], FORMS_WITH_SET)
-def test_set_parses(program, form):
+def test_set_parses(program: str, form: Form):
     name = "Zx___1D12e"
     result = parse(f"(set {name} {program})")
 
@@ -81,33 +81,35 @@ def test_set_missing_form_fails():
 
 
 @pytest.mark.parametrize("program", FORM_PROGRAMS)
-def test_set_missing_name_fails(program):
+def test_set_missing_name_fails(program: str):
     with pytest.raises(SpecialFormSyntaxError, match="set:"):
         parse(f"(set {program})")
 
 
 @pytest.mark.parametrize("program", FORM_PROGRAMS)
 @pytest.mark.parametrize("name", INVALID_NAMES)
-def test_set_invalid_name_fails(name, program):
+def test_set_invalid_name_fails(name: str, program: str):
     with pytest.raises(SpecialFormSyntaxError, match="set:"):
         parse(f"(set {name} {program})")
 
 
 @pytest.mark.parametrize("program", MULTIPLE_FORM_PROGRAMS)
-def test_set_multiple_forms_fails(program):
+def test_set_multiple_forms_fails(program: str):
     with pytest.raises(SpecialFormSyntaxError, match="set:"):
         parse(f"(set Zx___1D12e {program})")
 
 
 @pytest.mark.parametrize("program", MULTIPLE_FORM_PROGRAMS)
-def test_set_missing_name_multiple_forms_fails(program):
+def test_set_missing_name_multiple_forms_fails(program: str):
     with pytest.raises(SpecialFormSyntaxError, match="set:"):
         parse(f"(set {program})")
 
 
 @pytest.mark.parametrize(["body_program", "body"], FORMS_WITH_SET_AND_BINDING)
 @pytest.mark.parametrize(["binding_program", "binding"], FORMS_WITH_SET_AND_BINDING)
-def test_let_single_binding_and_body_parses(binding_program, body_program, binding, body):
+def test_let_single_binding_and_body_parses(
+    binding_program: str, body_program: str, binding: Form, body: Form
+):
     result = parse(f"(let ((aZ8__xe_2 {binding_program})) {body_program})")
 
     assert result == Program((Let((LetBinding(Variable("aZ8__xe_2"), binding),), (body,)),))
@@ -115,7 +117,9 @@ def test_let_single_binding_and_body_parses(binding_program, body_program, bindi
 
 @pytest.mark.parametrize(["body_program", "body"], FORMS_WITH_SET_AND_BINDING)
 @pytest.mark.parametrize(["program", "bindings"], MULTIPLE_LET)
-def test_let_multiple_bindings_parses(program, body_program, bindings, body):
+def test_let_multiple_bindings_parses(
+    program: str, body_program: str, bindings: tuple[LetBinding, ...], body: Form
+):
     program = program.replace("$body$", body_program)
 
     result = parse(program)
@@ -125,7 +129,9 @@ def test_let_multiple_bindings_parses(program, body_program, bindings, body):
 
 @pytest.mark.parametrize(["body_program", "body"], MULTIPLE_FORMS_WITH_LET)
 @pytest.mark.parametrize(["program", "bindings"], MULTIPLE_LET)
-def test_let_multiple_bindings_and_body_parses(program, body_program, bindings, body):
+def test_let_multiple_bindings_and_body_parses(
+    program: str, body_program: str, bindings: tuple[LetBinding, ...], body: tuple[Form, ...]
+):
     program = program.replace("$body$", body_program)
 
     result = parse(program)
@@ -134,13 +140,13 @@ def test_let_multiple_bindings_and_body_parses(program, body_program, bindings, 
 
 
 @pytest.mark.parametrize(["program", "form"], FORMS_WITH_SET_AND_BINDING)
-def test_let_single_binding_missing_body_fails(program, form):
+def test_let_single_binding_missing_body_fails(program: str, form: str):
     with pytest.raises(SpecialFormSyntaxError, match="let:"):
         parse(f"(let ((aZ8__xe_2 {program})))")
 
 
 @pytest.mark.parametrize(["program", "bindings"], MULTIPLE_LET)
-def test_let_multiple_bindings_missing_body_fails(program, bindings):
+def test_let_multiple_bindings_missing_body_fails(program: str, bindings: tuple[LetBinding, ...]):
     program = program.replace("$body$", "")
 
     with pytest.raises(SpecialFormSyntaxError, match="let:"):
@@ -148,18 +154,18 @@ def test_let_multiple_bindings_missing_body_fails(program, bindings):
 
 
 @pytest.mark.parametrize(["program", "body"], FORMS_WITH_SET)
-def test_let_missing_bindings_single_body_fails(program, body):
+def test_let_missing_bindings_single_body_fails(program: str, body: Form):
     with pytest.raises(SpecialFormSyntaxError, match="let:"):
         parse(f"(let {program})")
 
 
 @pytest.mark.parametrize(["program", "body"], MULTIPLE_FORMS_WITH_LET)
-def test_let_missing_bindings_multiple_body_fails(program, body):
+def test_let_missing_bindings_multiple_body_fails(program: str, body: tuple[Form, ...]):
     with pytest.raises(SpecialFormSyntaxError, match=r"let( binding)?:"):
         parse(f"(let {program})")
 
 
 @pytest.mark.parametrize("program", LET_WITH_INVALID_BINDINGS)
-def test_let_invalid_bindings_fails(program):
+def test_let_invalid_bindings_fails(program: str):
     with pytest.raises(SpecialFormSyntaxError, match="let binding:"):
         parse(program)

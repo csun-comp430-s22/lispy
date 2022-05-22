@@ -1,4 +1,5 @@
 -c coverage.pip
 -r requirements.pip
+-r pytest.pip
 
 pre-commit>=2.17
