@@ -37,7 +37,7 @@ class DuplicateNameError(SpecialFormSyntaxError):
     @classmethod
     def from_syntax(cls, name: str, inner_syntax: str) -> NoReturn:
         """Not implemented."""
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class TypeSyntaxError(SyntaxError):

@@ -8,7 +8,7 @@ __all__ = ("Unifier",)
 
 
 class Unifier:
-    """TODO."""
+    """Perform unification for type inference."""
 
     def __init__(self):
         self._map: dict[UnknownType, Type] = {}

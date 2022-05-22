@@ -30,7 +30,7 @@ __all__ = (
 
 @dataclass(frozen=True, slots=True)
 class FunctionParameter(Node, FromSExpressionMixin["FunctionParameter"]):
-    """TODO."""
+    """A parameter of a function as defined by the `lambda` special form."""
 
     name: Variable
     type: Type
@@ -51,7 +51,7 @@ class FunctionParameter(Node, FromSExpressionMixin["FunctionParameter"]):
 
 @dataclass(frozen=True, slots=True)
 class Lambda(SpecialForm):
-    """TODO."""
+    """The `lambda` special form; defines a function which is not bound to a name."""
 
     id = "lambda"
     parameters: Sequence[FunctionParameter]
@@ -73,7 +73,7 @@ class Lambda(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class List(SpecialForm):
-    """TODO."""
+    """The `list` special form; creates a list out of zero or more elements."""
 
     id = "list"
     elements: Sequence[Form]
@@ -96,7 +96,7 @@ class List(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class Cons(SpecialForm):
-    """TODO."""
+    """The `cons` special form; prepends an element to a list."""
 
     id = "cons"
     car: Form
@@ -117,7 +117,7 @@ class Cons(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class Car(SpecialForm):
-    """TODO."""
+    """The `car` special form; returns the first element of a list."""
 
     id = "car"
     list: Form
@@ -137,7 +137,7 @@ class Car(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class Cdr(SpecialForm):
-    """TODO."""
+    """The `cdr` special form; returns a list with the first element removed."""
 
     id = "cdr"
     list: Form
@@ -157,7 +157,7 @@ class Cdr(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class Progn(SpecialForm):
-    """TODO."""
+    """The `progn` special form; sequentially evaluates multiple forms."""
 
     id = "progn"
     forms: Sequence[Form]
@@ -178,7 +178,7 @@ class Progn(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class Set(SpecialForm):
-    """TODO."""
+    """The `set` special form; assigns a new value to a variable."""
 
     id = "set"
     name: Variable
@@ -199,7 +199,7 @@ class Set(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class LetBinding(Node, FromSExpressionMixin["LetBinding"]):
-    """TODO."""
+    """A binding in a `let` special form."""
 
     name: Variable
     value: Form
@@ -220,7 +220,7 @@ class LetBinding(Node, FromSExpressionMixin["LetBinding"]):
 
 @dataclass(frozen=True, slots=True)
 class Let(SpecialForm):
-    """TODO."""
+    """The `let` special form; creates bindings in a new scope."""
 
     id = "let"
     bindings: Sequence[LetBinding]
@@ -243,7 +243,7 @@ class Let(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class Branch(Node, FromSExpressionMixin["Branch"]):
-    """TODO."""
+    """A branch of a conditional expression."""
 
     predicate: Form
     value: Form
@@ -264,7 +264,7 @@ class Branch(Node, FromSExpressionMixin["Branch"]):
 
 @dataclass(frozen=True, slots=True)
 class Cond(SpecialForm):
-    """TODO."""
+    """The `cond` special form; a conditional expression."""
 
     id = "cond"
     branches: Sequence[Branch]
@@ -286,7 +286,7 @@ class Cond(SpecialForm):
 
 @dataclass(frozen=True, slots=True)
 class Select(SpecialForm):
-    """TODO."""
+    """The `select` special form; a conditional expression."""
 
     id = "select"
     value: Form
