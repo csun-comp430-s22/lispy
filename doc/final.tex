@@ -1,0 +1,130 @@
+% !TEX output_directory = ./.temp/final
+% !TEX options = --shell-escape
+
+\documentclass[a4paper, 12pt]{article}
+\usepackage[outputdir=./.temp/final]{common}
+
+\usepackage{caption} % Captions outside floats
+
+\title{lispy Final Documentation}
+
+\begin{document}
+
+\maketitle
+{
+\hypersetup{linkcolor=black}
+\tableofcontents
+}
+
+\newpage
+\section{Design Justifications}
+LISP 1.5 was chosen as a base because it's syntactically very simple. 1.5 was chosen over a more modern dialect because it has a simpler feature set. Despite this, many features were still cut to even further simplify the implementation.
+
+The language's three major features are higher-order functions, generic lists, and type inference. The former two were chosen because they are already part of LISP 1.5, and because they're comparatively simple to implement. The latter was chosen because it felt like a very natural addition to the language given the statically typed requirement. Lisp's syntax, despite being simple, can overwhelm a reader with parenthesis. Thus, having type inference helps with readability. However, the language is not fully type inferred for the sake of ease of implementation.
+
+\section{Examples}
+See the manual for more examples and a detailed explanations of features.
+
+\subsection{Example 1}
+\begin{minted}[autogobble=true, linenos, samepage]{lisp}
+    (let
+      ((a 1) (b nil))
+      (set b
+        (cond
+          ((greaterp a 1) (list 1 2))
+          (list 3 4)
+        )
+      )
+      (car b)
+    )
+\end{minted}
+
+\texttt{b} is reassigned based on whether \texttt{a} is greater than 1. The entire form evaluates to \texttt{(car b)}, which retrieves the first value of the list.
+
+
+\subsection{Example 2}
+\begin{minted}[autogobble=true, linenos, samepage]{lisp}
+    (let
+      (
+        (add_10
+          (lambda
+            ((sum_floats (func (float float) float)) (x float))
+            (progn
+              (set x (sum_floats x 5.0))
+              (sum_floats x 5.0)
+            )
+          )
+        )
+        (wrapped_sum
+          (lambda
+            ((a float) (b float))
+            (sum a b)
+          )
+        )
+      )
+      (add_10 wrapped_sum 2.1)
+    )
+\end{minted}
+
+A function \texttt{add\_10} is defined by using a \texttt{lambda} form in the binding of a \texttt{let}. This function expects two arguments: a function which sums two floats, and a float to add 10 to. It adds 10 by adding 5 twice, the first time saving the value by reassigning the variable \texttt{x} in the scope of the function. \texttt{add\_10} is called with \texttt{wrapped\_sum} as the sum function and 2.1 as the value to add 10 to. \texttt{wrapped\_sum} needs to wrap the special form \texttt{sum} because special forms are not higher-order functions.
+
+\section{Limitations}
+\subsection{Deviations from Plans}
+\begin{itemize}
+    \item Code generation is not implemented.
+    \item A majority of the planned special forms and built-ins are not implemented.
+    \item \texttt{set} cannot create new bindings; it can only reassign.
+    \item \texttt{car} and \texttt{cdr} should but don't disallow \texttt{nil} as the argument.
+    \item \texttt{select} should but doesn't disallow comparing functions.
+\end{itemize}
+
+\subsection{General}
+\begin{itemize}
+    \item No character objects / strings.
+    \item No input support.
+    \item No debugging, tracing, or error handling.
+    \item No back-trace for runtime errors.
+    \item No distinction between compiled and interpreted code; everything is compiled.
+    \item Many built-in functions will be classified as special forms because the language's type system cannot describe these functions.
+    \item Special forms are not first-class citizens.
+    \item Special forms cannot be redefined.
+\end{itemize}
+
+\subsection{Syntactic}
+\begin{itemize}
+    \item No comments.
+    \item No octal numbers.
+    \item No comma delimiter for list elements.
+    \item No dot notation for S-expressions.
+\end{itemize}
+
+\subsection{Typing}
+\begin{itemize}
+    \item All lists are homogenous.
+    \item Types of lambda parameters must always be explicitly defined; they are never inferred.
+    \item All branches of conditional expressions must evaluate to the same type.
+\end{itemize}
+
+\subsection{Cut LISP 1.5 Features}
+\begin{itemize}
+    \item No macros.
+    \item No arrays.
+    \item No compiler/assembler functions.
+    \item No \texttt{PROG}.
+    \item No \texttt{QUOTE}.
+    \item No \texttt{EVAL} or \texttt{EVALQUOTE}.
+    \item No property lists (\texttt{GET}, \texttt{PUT}, \texttt{PROP}, \texttt{REMPROP}).
+    \item No in-place list manipulation (\texttt{RPLACA}, \texttt{RPLACD}, \texttt{NCONC}).
+    \item No user-defined functions using machine code.
+\end{itemize}
+
+\section{Regrets and Learning Outcomes}
+I only have one regret and that is in how special forms were handled. I should have found a more generic approach to implementing them (perhaps with type variables), because currently each special form is hard-coded not only in the parser, but in the type checker too. This means that tests require more cases and take much longer to write. Given the amount of additional special forms I had planned, this approach would have not been sustainable; I would have probably lost my sanity writing so many tests.
+
+\section{Usage Instructions}
+The code generator is not implemented, so this section is not applicable.
+
+\section{Grammar}
+See the appendix in the manual.
+
+\end{document}

@@ -18,6 +18,13 @@
 % Syntax highlighting.
 \usepackage[outputdir=\outputdir]{minted}
 
+% Centre minted.
+% https://tex.stackexchange.com/a/161128
+\usepackage{xpatch, letltxmacro}
+\LetLtxMacro{\cminted}{\minted}
+\let\endcminted\endminted
+\xpretocmd{\cminted}{\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}}{}{}
+
 % Avoid page breaks right after headings.
 % https://tex.stackexchange.com/a/2358
 \usepackage{etoolbox}
