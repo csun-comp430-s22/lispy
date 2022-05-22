@@ -69,6 +69,12 @@ UNBOUND_NAME_REFERENCES = [
     "(let ((a (let ((b 2)) b))) b)",
 ]
 
+PREMATURE_REFERENCE_LETS = [
+    "(let ((a 1) (b a)) nil)",
+    "(let ((a b) (b false)) nil)",
+    "(let ((a 1) (b (let ((c a)) nil))) nil)",
+]
+
 
 def test_let_set_typechecks():
     program = """
@@ -139,6 +145,14 @@ def test_set_invalid_value_type_error(program: str):
 
 @pytest.mark.parametrize("program", UNBOUND_NAME_REFERENCES)
 def test_reference_unbound_name_error(program: str):
+    program_node = parse(program)
+
+    with pytest.raises(exceptions.UnboundNameError):
+        TypeChecker.check_program(program_node)
+
+
+@pytest.mark.parametrize("program", PREMATURE_REFERENCE_LETS)
+def test_let_binds_in_parallel(program: str):
     program_node = parse(program)
 
     with pytest.raises(exceptions.UnboundNameError):
