@@ -34,6 +34,43 @@ VALID_SETS = [
     ),
 ]
 
+SCOPE_TEST_LAMBDAS = [
+    (
+        "(lambda ((a int) (b float)) (progn a b))",
+        FunctionType((IntType(), FloatType()), FloatType()),
+    ),
+    (
+        "(lambda ((a int) (b float)) (progn a b (let ((c 1) (d false)) a b c d) a b))",
+        FunctionType((IntType(), FloatType()), FloatType()),
+    ),
+]
+
+SCOPE_TEST_LETS = [
+    ("(let ((a 1) (b 2.0)) a b)", FloatType()),
+    ("(let ((a 1) (b 2.0)) a b (let ((b 3.0)) a b) a b)", FloatType()),
+    ("(let ((a 1) (b 2.0)) a b (lambda ((c bool)) (progn a b c)) a b)", FloatType()),
+    (
+        "(let ((a 1) (b 2.0) (c false) (d (list 1 2))) "
+        "a b c d (let ((e 2) (f false)) a b c d e f) d b c a)",
+        IntType(),
+    ),
+]
+
+SCOPE_TEST_SETS = [
+    ("(let ((a 1) (b 2.0) (c false) (d (list 1 2))) (set c true) d b c a)", IntType()),
+    ("(let ((a 1) (b false)) (let ((b 2.0)) a b) (set a 2) a b)", BoolType()),
+    ("(let ((a 1) (b false)) (let ((b 2.0)) (set a 2)) a b)", BoolType()),
+    ("(let ((a 1) (b false)) (let ((b 2.0)) (set a 2) a b) (set a 2) a b)", BoolType()),
+    (
+        "(lambda ((a int) (b bool)) (progn a b (set a 1) a b))",
+        FunctionType((IntType(), BoolType()), BoolType()),
+    ),
+    (
+        "(lambda ((a int) (b bool)) (lambda ((c float)) (progn a b c (set a 1) a b c)))",
+        FunctionType((IntType(), BoolType()), FunctionType((FloatType(),), FloatType())),
+    ),
+]
+
 INVALID_NAME_LETS = [
     "(let (({name} 1.0)) {return_val})",
     "(let (({name} (list 1))) {return_val})",
@@ -114,6 +151,33 @@ PREMATURE_REFERENCE_LETS = [
 
 @pytest.mark.parametrize(["program", "type_"], VALID_SETS)
 def test_set_typechecks(program: str, type_: Type):
+    program_node = parse(program)
+
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
+
+
+@pytest.mark.parametrize(["program", "type_"], SCOPE_TEST_LAMBDAS)
+def test_lambda_names_in_scope(program: str, type_: Type):
+    program_node = parse(program)
+
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
+
+
+@pytest.mark.parametrize(["program", "type_"], SCOPE_TEST_LETS)
+def test_let_names_in_scope(program: str, type_: Type):
+    program_node = parse(program)
+
+    result = list(TypeChecker.check_program(program_node))
+
+    assert result == [type_]
+
+
+@pytest.mark.parametrize(["program", "type_"], SCOPE_TEST_SETS)
+def test_set_other_names_remain_in_scope(program: str, type_: Type):
     program_node = parse(program)
 
     result = list(TypeChecker.check_program(program_node))
