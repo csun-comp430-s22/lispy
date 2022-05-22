@@ -83,7 +83,7 @@ class TypeChecker:
             )
 
     def _bind(self, variable: Variable, value: Form, scope: Scope) -> Type:
-        """Bind or rebind a variable in the given `scope` and return the type of its new value.
+        """Rebind a variable in the given `scope` and return the type of its new value.
 
         The variable's name must not be the name of a special form or "nil".
         """
