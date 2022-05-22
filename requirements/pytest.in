@@ -1,0 +1,4 @@
+-c coverage.pip
+-c requirements.pip
+
+pytest>=7.0.1
