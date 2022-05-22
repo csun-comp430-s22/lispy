@@ -16,13 +16,6 @@
 \usepackage{tikz}
 \usetikzlibrary{tikzmark,decorations.pathreplacing,calligraphy}
 
-% Centre minted.
-% https://tex.stackexchange.com/a/161128
-\usepackage{xpatch, letltxmacro}
-\LetLtxMacro{\cminted}{\minted}
-\let\endcminted\endminted
-\xpretocmd{\cminted}{\RecustomVerbatimEnvironment{Verbatim}{BVerbatim}{}}{}{}
-
 % https://tex.stackexchange.com/a/5020
 \newcolumntype{x}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
 \newenvironment{funcdefs}
