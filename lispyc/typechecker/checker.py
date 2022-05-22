@@ -283,8 +283,14 @@ class TypeChecker:
         """Get the type of the value bound to the given `variable` in the given `scope`.
 
         Raise UnboundNameError if the name is not in scope.
+        Raise SpecialFormSyntaxError if the name is that of a special form.
         """
-        if variable.name == NIL:
+        if variable.name in SpecialForm.forms_map:
+            raise exceptions.SpecialFormSyntaxError(
+                f"Invalid syntax for special form {variable.name!r}: "
+                f"a special form's name cannot be used as a reference to a binding"
+            )
+        elif variable.name == NIL:
             # nil is a special case that's always in scope.
             # Just like in _check_list, each reference to nil must return a new instance of the type
             # to prevent nils referenced in different scopes from unifying with each other.
